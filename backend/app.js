@@ -60,23 +60,43 @@ if (!isProduction) {
     if (err instanceof ValidationError) {
       let errors = {};
       for (let error of err.errors) {
+        // console.log(error.path,'---------------------')
         errors[error.path] = error.message;
       }
+
       err.title = 'Validation error';
       err.errors = errors;
     }
     next(err);
   });
 
+  app.use((err, _req, _res, next)=>{
+    if(err instanceof ValidationError){
+      if(err.errors.email === 'email must be unique'){
+        err.errors.email = "User with that email already exists";
+        err.message = "User already exists"
+      }
+    }
+    next(err)
+  })
+
   app.use((err, _req, res, _next) => {
     res.status(err.status || 500);
     console.error(err);
-    res.json({
+    if(isProduction){
+      res.json({
+        message: err.message,
+        errors: err.errors,
+      })
+    }else{
+      res.json({
       title: err.title || 'Server Error',
       message: err.message,
       errors: err.errors,
       stack: isProduction ? null : err.stack
-    });
+     });
+    }
+    
   });
 
   module.exports = app;
