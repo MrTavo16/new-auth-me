@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 
 const { environment } = require('./config');
 const isProduction = environment === 'production';
+console.log(environment)
 
 const routes = require('./routes');
 

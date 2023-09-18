@@ -61,6 +61,14 @@ module.exports = {
         allowNull:false,
         min:1
       },
+      numReviews:{
+        type:Sequelize.INTEGER,
+        min:0
+      },
+      avgStarRating:{
+        type:Sequelize.FLOAT,
+        min:0
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

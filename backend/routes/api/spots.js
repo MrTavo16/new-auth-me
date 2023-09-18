@@ -4,6 +4,7 @@ const { check } = require('express-validator');
 const  { query } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
 const { Spot, Image, User, Review, Booking } = require('../../db/models')
+const { Op } = require('sequelize')
 
 const validateBooking = [
     check("startDate")
@@ -26,6 +27,59 @@ const validateBooking = [
         if(!(new Date(value) < new Date(req.body.startDate)))return true
         else throw new Error("endDate cannot come before startDate")
     }),
+    handleValidationErrors
+]
+
+const checkingQueries = [
+    query('page')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req, location, path})=>{
+        if(value >= 1)return true
+        else throw new Error("Page must be greater than or equal to 1")
+      }),
+    query('size')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req, location, path})=>{
+        if(value >= 1)return true
+        else throw new Error("Size must be greater than or equal to 1")
+      }),
+    query('minLat')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req,location, path})=>{
+        if((value > req.query.maxLat))return true
+        else throw new Error("Minimum latitude is invalid")
+      }),
+    query('maxLat')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req,location, path})=>{
+        if((value < req.query.minLat))return true
+        else throw new Error("Maximum latitude is invalid")
+      }),
+    query('minLng')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req,location, path})=>{
+        if((value > req.query.maxLat))return true
+        else throw new Error("Minimum longitude is invalid")
+      }),
+    query('maxLng')
+      .optional({nullable: true})
+      .custom(async (value, {req,location, path})=>{
+        console.log(value,'---------value---------')
+        if((value < req.query.minLat))return true
+        else throw new Error("Maximum longitude is invalid")
+      }),
+    query('minPrice')
+      .optional({nullable: true})
+      .custom(async (value, {req, location, path})=>{
+        if((value >= 0)) return true
+        else throw new Error("Minimum price must be greater than or equal to 0")     
+      }),
+    query('maxPrice')
+      .optional({checkFalsy: true})
+      .custom(async (value, {req, location, path})=>{
+        if((value >= 0)) return true
+        else throw new Error("Maximum price must be greater than or equal to 0")
+      }),
     handleValidationErrors
 ]
 
@@ -96,15 +150,75 @@ router.post(
         }
         return res.json(safeSpot)
     })
-    router.get('/',async (req, res)=>{
-        const {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
-        const allSpots = await Spot.findAll()
+    router.get('/',checkingQueries,async (req, res)=>{
+        let {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
+        const pagination = {};
+        const searchParams = {}
+
+        if(page&& !isNaN(Number(page))){
+          page = Number(page)
+        }else{
+          page = 1
+        }
+      
+        if(size&& !isNaN(Number(size))){
+          size = Number(size)
+      
+          if(size > 20&&size < 0) size = 20
+        }else{
+          size = 20
+        }
+
+        if(minLat&& !isNaN(Number(minLat))){
+            searchParams.lat = {}
+            searchParams.lat[Op.gte] = Number(minLat)
+        }
+
+        if(maxLat&& !isNaN(Number(maxLat))){
+            if(!minLat) searchParams.lat = {}
+            searchParams.lat[Op.lte] = Number(maxLat)
+        }
+
+        if(minLng&& !isNaN(Number(minLng))){
+            searchParams.lng = {}
+            searchParams.lng[Op.gte] = Number(minLng)
+        }
+
+        if(maxLng&& !isNaN(Number(maxLng))){
+            if(!minLng)searchParams.lng = {}
+            searchParams.lng[Op.lte] = Number(maxLng)
+        }
+
+        if(minPrice&&!isNaN(Number(minPrice))){
+            searchParams.price = {}
+            searchParams.price[Op.gte] = Number(minPrice)
+        }
+
+        if(maxPrice&&!isNaN(Number(maxPrice))){
+            if(!minPrice)searchParams.price = {}
+            searchParams.price = {[Op.lte]:Number(maxPrice)}
+        }
+      
+        if(size){
+          pagination.limit = size
+        }
+      
+        if (page){
+          pagination.offset = size * (page - 1)
+        }
+        console.log(searchParams,'---------search--------')
+        const allSpots = await Spot.findAll({
+            where:searchParams,
+            ...pagination
+        })
         res.json({
-            spots:allSpots
+            Spots:allSpots,
+            page,
+            size
         })
     })
     router.get('/current',async(req, res)=>{
-        const {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
+        // console.log(req,'-----------------req----------------')
         const currUser = req.user.id
         const allSpots = await Spot.findAll({
             where:{
@@ -117,7 +231,6 @@ router.post(
     })
 
     router.get('/:spotId/reviews',async (req, res)=>{
-        const {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
         // const spotI = Number(req.params.spotId)
         const reviews = await Review.findAll({
             where:{
@@ -175,7 +288,6 @@ router.post(
     })
 
     router.get('/:spotId/bookings',async (req, res)=>{
-        const {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
         const spotId = Number(req.params.spotId)
         const currUser = req.user.id
         const spot = await Spot.findByPk(spotId)
@@ -190,7 +302,7 @@ router.post(
                 spotId: spotId
             },
         })
-        console.log(spotId,'--------------------------',currUser)
+        // console.log(spotId,'--------------------------',currUser)
         if(spotId === req.user.id){
             res.status(200).json({Bookings:bookings})
         }
@@ -327,14 +439,13 @@ router.post(
     })
     
     router.get('/:spotId',async (req, res)=>{
-        const {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
         const spotId = req.params.spotId
         const spotInfo = await Spot.findByPk(spotId,{
             include:[{model:Image,as:'SpotImages'}, {model:User,as:'Owner'}]
         })
         res.status(200).json({
             spotInfo
-        , minLat, maxLat, minLng, maxLng, minPrice, maxPrice})
+        })
     })
 
 module.exports = router

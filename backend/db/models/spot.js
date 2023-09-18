@@ -76,6 +76,14 @@ module.exports = (sequelize, DataTypes) => {
       isNumeric:true,
       allowNull:false
     },
+    numReviews:{
+      type:DataTypes.INTEGER,
+      min:0
+    },
+    avgStarRating:{
+      type:DataTypes.FLOAT,
+      min:0
+    }
   }, {
     sequelize,
     modelName: 'Spot',
