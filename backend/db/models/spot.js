@@ -78,10 +78,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     numReviews:{
       type:DataTypes.INTEGER,
+      allowNull:false,
+      defaultValue:0,
       min:0
     },
     avgStarRating:{
       type:DataTypes.FLOAT,
+      allowNull:false,
+      defaultValue:0,
       min:0
     }
   }, {

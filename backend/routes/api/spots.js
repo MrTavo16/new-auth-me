@@ -83,6 +83,22 @@ const checkingQueries = [
     handleValidationErrors
 ]
 
+const validateReviews = [
+  check('review')
+    .exists()
+    .notEmpty()
+    .withMessage("Review text is required"),
+  check('stars')
+    .isNumeric()
+    .custom((value, { req, location, path }) =>{
+      if((value >= 1) && (value <= 5))return true
+      else throw new Error('Stars must be an integer from 1 to 5')
+    })
+    .exists()
+    .withMessage("Stars must be an integer from 1 to 5"),
+    handleValidationErrors
+]
+
 const validateSpots = [
     check('address')
       .exists()
@@ -120,9 +136,15 @@ router.post(
     validateSpots,
     async (req,res)=>{
         const {address ,city, state, country, lat, lng, name, description, price} = req.body
+        const user = req.user
+        const numReviews = 0
+        const avgStarRating = 0
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
         const ownerId = req.user.id
         if(!req.user.id){
-            return res.json('need to be logged in')
+            return res.json("Authentication required")
         }
         const spotCheck = await Spot.findOne({
             where:{
@@ -134,7 +156,7 @@ router.post(
                 message:'address needs to be a unique'
             })
         }
-        const spot = await Spot.create({ownerId ,address ,city, state, country, lat, lng, name, description, price})
+        const spot = await Spot.create({ownerId ,address ,city, state, country, lat, lng, name, description, price, numReviews,avgStarRating })
         const safeSpot = {
             id:spot.id,
             ownerId:spot.ownerId,
@@ -149,8 +171,8 @@ router.post(
             price:spot.price
         }
         return res.json(safeSpot)
-    })
-    router.get('/',checkingQueries,async (req, res)=>{
+})
+router.get('/',checkingQueries,async (req, res)=>{
         let {page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice} = req.query
         const pagination = {};
         const searchParams = {}
@@ -206,7 +228,7 @@ router.post(
         if (page){
           pagination.offset = size * (page - 1)
         }
-        console.log(searchParams,'---------search--------')
+        // console.log(searchParams,'---------search--------')
         const allSpots = await Spot.findAll({
             where:searchParams,
             ...pagination
@@ -219,6 +241,10 @@ router.post(
     })
     router.get('/current',async(req, res)=>{
         // console.log(req,'-----------------req----------------')
+        const user = req.user
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
         const currUser = req.user.id
         const allSpots = await Spot.findAll({
             where:{
@@ -252,6 +278,11 @@ router.post(
         validateBooking,
         async (req, res)=>{
         const endDate = req.body.endDate
+        const user = req.user
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
+        const userId = req.user.id
         const startDate = req.body.startDate
         const bookings = await Booking.findAll()
         bookings.forEach(ele=>{
@@ -274,7 +305,6 @@ router.post(
               })
         })
         const spotId = req.params.spotId
-        const userId = req.user.id
         const spotCheck = await Spot.findByPk(spotId)
         if(!spotCheck){
             return res.status(404).json({
@@ -282,51 +312,64 @@ router.post(
               })
         }
 
-        if(userId === spotCheck.ownerId)throw new Error('cannot book your own spot')
+        if(userId === spotCheck.ownerId)return res.status(403).json({
+          "message": "Forbidden"
+        })
         const bookingCreated = await Booking.create({spotId, userId, startDate, endDate})
         res.status(200).json(bookingCreated)
     })
 
     router.get('/:spotId/bookings',async (req, res)=>{
         const spotId = Number(req.params.spotId)
-        const currUser = req.user.id
+        const user = req.user
         const spot = await Spot.findByPk(spotId)
         if(!spot){
-            return res.status(404).json({
-                "message": "Spot couldn't be found"
-              })
+          return res.status(404).json({
+            "message": "Spot couldn't be found"
+          })
         }
         const bookings = await Booking.findAll({
-            include:{model:User},
-            where:{
-                spotId: spotId
-            },
+          include:{model:User},
+          where:{
+            spotId: spotId
+          },
         })
         // console.log(spotId,'--------------------------',currUser)
-        if(spotId === req.user.id){
-            res.status(200).json({Bookings:bookings})
-        }
         const filteredBookings = []
         bookings.forEach(ele=>{
-            const filter = {
-                spotId:ele.spotId,
-                startDate:ele.startDate,
-                endDate:ele.endDate
-            }
-            filteredBookings.push(filter)
+          const filter = {
+            spotId:ele.spotId,
+            startDate:ele.startDate,
+            endDate:ele.endDate
+          }
+          filteredBookings.push(filter)
         })
-
-        return res.status(200).json({
+        if(!user||user.id !== spot.ownerId){
+          return res.status(200).json({
             Bookings:filteredBookings
-        })
+          })
+        }
+        
+        if(spot.ownerId === req.user.id){
+            res.status(200).json({Bookings:bookings})
+        }
+        
     })
     
 
-    router.post('/:spotId/reviews',async (req, res)=>{
+router.post('/:spotId/reviews',
+      validateReviews,  
+      async (req, res)=>{
         const {review, stars} = req.body;
         const spotId = Number(req.params.spotId)
+        const user = req.user
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
         const userId = req.user.id
-        const spotCheck = await Spot.findByPk(req.params.spotId)
+        const spotCheck = await Spot.findByPk(spotId,{
+          include:{model:Review}
+        })
         const userCheck = await User.findByPk(req.user.id,{
             include:{
                 model:Review
@@ -348,7 +391,28 @@ router.post(
               })
         }
         if(review && stars){
-           const newReview = await Review.create({userId, spotId, review, stars}) 
+          const newReview = await Review.create({userId, spotId, review, stars}) 
+          let starCount = 0
+          spotCheck.numReviews = spotCheck.numReviews + 1
+          await Spot.increment({numReviews:1},{where:{id:spotId}})
+          // console.log(spotCheck.numReviews,'----------------spotcheck numReviews-------')
+          let numOfRev = spotCheck.numReviews
+          spotCheck.Reviews.forEach(ele=>{
+            starCount += ele.stars
+          })
+          starCount += stars
+          if(numOfRev === 0 &&starCount === 0){
+            spotCheck.numReviews = numOfRev
+            spotCheck.avgStarRating = stars
+            const newReview = await Review.create({userId, spotId, review, stars}) 
+            return res.status(201).json(newReview)
+          }
+          spotCheck.avgStarRating = starCount/numOfRev
+          // console.log(numOfRev,'review num -----------')
+          // console.log(starCount,'starCount --------')
+          // console.log(starCount/numOfRev)
+          // console.log(spotCheck,'----------------spotcheck after-------')
+
            return res.status(201).json(newReview)
         }
     })
@@ -356,9 +420,15 @@ router.post(
     router.post('/:id/images',async (req, res)=>{
         const imageableId = Number(req.params.id)
         const imageableType = 'SpotPics'
+        const user = req.user
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
         const spotCheck = await Spot.findByPk(imageableId)
         if(!(spotCheck.ownerId === req.user.id)){
-            throw new Error('Only owner can add images')
+            return res.status(403).json({
+              "message": "Forbidden"
+            })
         }
         if(!spotCheck){
             return res.status(404).json({
@@ -377,6 +447,10 @@ router.post(
     })
 
     router.delete('/:spotId',async (req, res)=>{
+        const user = req.user
+        if(!user)return res.status(401).json({
+          "message": "Authentication required"
+        })
         const currUser = req.user.id
         const spot = await Spot.findByPk(Number(req.params.spotId))
         if(!spot)return res.status(404).json({
@@ -389,24 +463,26 @@ router.post(
                 "message": "Successfully deleted"
               })
         }else{
-            return res.status(404).json({message:'only owner can delete'})
+            return res.status(401).json({
+              "message": "Forbidden"
+            })
         }
 
     })
 
-    router.put('/:spotId',
+router.put('/:spotId',
         validateSpots,
         async (req, res)=>{
         const {address ,city, state, country, lat, lng, name, description, price} = req.body
-        const spotId = req.params.spotId
+        const spotId = Number(req.params.spotId)
         const spot = await Spot.findByPk(spotId)
+        if(!spot){
+          res.status(404).json({
+            "message": "Spot couldn't be found"
+          })
+        }
         if(!(spot.ownerId === req.user.id)){
             throw new Error('Only owner can add images')
-        }
-        if(!spot){
-            res.status(404).json({
-                "message": "Spot couldn't be found"
-              })
         }
         if(address){
             spot.address = address
@@ -442,6 +518,9 @@ router.post(
         const spotId = req.params.spotId
         const spotInfo = await Spot.findByPk(spotId,{
             include:[{model:Image,as:'SpotImages'}, {model:User,as:'Owner'}]
+        })
+        if(!spotInfo)return res.status(404).json({
+          "message": "Spot couldn't be found"
         })
         res.status(200).json({
             spotInfo

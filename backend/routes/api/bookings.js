@@ -30,6 +30,10 @@ const validateBooking = [
 ]
 
 router.get('/current',async (req, res)=>{
+    const user = req.user
+    if(!user)return res.status(401).json({
+        "message": "Authentication required"
+      })
     const currUser = req.user.id
     const bookings = await Booking.findAll({
         where:{
@@ -78,6 +82,10 @@ router.put('/:bookingId',handleValidationErrors,async (req, res)=>{
 })
 
 router.delete('/:bookingId',async (req, res)=>{
+    const user = req.user
+    if(!user)return res.status(401).json({
+        "message": "Authentication required"
+      })
     const currUser = req.user.id
     let today = new Date().toISOString().slice(0, 10)
     const booking = await Booking.findByPk(Number(req.params.bookingId))
@@ -97,7 +105,7 @@ router.delete('/:bookingId',async (req, res)=>{
             "message": "Successfully deleted"
           })
     }else{
-        return res.json({message:'only owner can delete'})
+        return res.json({message:'Forbidden'})
     }
 
 })

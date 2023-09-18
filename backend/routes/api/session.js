@@ -89,6 +89,9 @@ router.get(
     (req, res) => {
       // console.log(req)
       const { user } = req;
+      // if(!user)return res.status(401).json({
+      //   "message": "Authentication required"
+      // })
       if (user) {
         const safeUser = {
           id: user.id,

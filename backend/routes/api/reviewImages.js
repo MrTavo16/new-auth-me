@@ -7,6 +7,10 @@ const { Spot, Image, User, Review, Booking } = require('../../db/models')
 
 
 router.delete('/:imageId',async (req, res)=>{
+    const user = req.user
+    if(!user)return res.status(401).json({
+        "message": "Authentication required"
+      })
     const currUser = req.user.id
     const reviewImg = await Image.unscoped().findByPk(Number(req.params.imageId),{
         where:{
@@ -32,7 +36,7 @@ router.delete('/:imageId',async (req, res)=>{
             "message": "Successfully deleted"
           })
     }else{
-        return res.status(400).json({message:'only owner can delete'})
+        return res.status(400).json({message:'Forbidden'})
     }
 })
 
