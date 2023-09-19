@@ -386,10 +386,16 @@ router.post('/:spotId/reviews',
         const spotCheck = await Spot.findByPk(spotId,{
           include:{model:Review}
         })
+        
+        if(!spotCheck){
+            return res.status(404).json({
+                "message": "Spot couldn't be found"
+              })
+        }
         const userCheck = await User.findByPk(req.user.id,{
-            include:{
-                model:Review
-            }
+          include:{
+            model:Review
+          }
         })
         if(userCheck.Reviews){
           userCheck.Reviews.forEach(ele => {
@@ -399,12 +405,6 @@ router.post('/:spotId/reviews',
                   })
             }
         });  
-        }
-        
-        if(!spotCheck){
-            return res.status(404).json({
-                "message": "Spot couldn't be found"
-              })
         }
         if(review && stars){
           const newReview = await Review.create({userId, spotId, review, stars}) 
@@ -423,6 +423,9 @@ router.post('/:spotId/reviews',
             const newReview = await Review.create({userId, spotId, review, stars}) 
             return res.status(201).json(newReview)
           }
+          // await spotCheck.update({totalStars:starCount})
+          await spotCheck.update({avgStarRating:starCount/numOfRev})
+          await spotCheck.save()
           spotCheck.avgStarRating = starCount/numOfRev
           // console.log(numOfRev,'review num -----------')
           // console.log(starCount,'starCount --------')
@@ -518,7 +521,7 @@ router.put('/:spotId',
         }
         if(!(spot.ownerId === req.user.id)){
           return res.status(401).json({
-            "message": "Authentication required"
+            "message": "Forbidden"
           })
         }
         if(address){

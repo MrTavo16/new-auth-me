@@ -62,7 +62,7 @@ router.put('/:bookingId',validateBooking,async (req, res)=>{
     })
     if(!(specBooking.userId === user.id)){
       return res.status(404).json({
-        "message": "Authentication required"
+        "message": "Forbidden"
       })
     }
     await specBooking.update({startDate:'0000-00-00'})

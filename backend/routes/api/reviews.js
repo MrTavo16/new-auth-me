@@ -75,9 +75,11 @@ router.delete('/:reviewId',async (req, res)=>{
         "message": "Review couldn't be found"
       })
     const spot = await Spot.findByPk(review.spotId)
+    
     await Spot.decrement({numReviews: 1}, { where: { id: review.spotId} })
     console.log(spot.numReviews)
     if(review.userId === currUser){
+        await review.destroy()
         await Review.destroy({where:{id:Number(req.params.reviewId)},force:true})
         return res.status(200).json({
             "message": "Successfully deleted"
@@ -93,7 +95,7 @@ router.put('/:reviewId',
     const user = req.user
     if(!user){
         return res.status(401).json({
-          "message": "Authentication required"
+          "message": "Forbidden"
         })
     }
     

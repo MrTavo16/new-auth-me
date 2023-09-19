@@ -91,13 +91,16 @@ module.exports = (sequelize, DataTypes) => {
     previewImage:{
       type:DataTypes.STRING,
 
+    },
+    totalStars:{
+      type:DataTypes.INTEGER
     }
   }, {
     sequelize,
     modelName: 'Spot',
     defaultScope:{
       attributes:{
-        exclude:['previewImage'],
+        exclude:['previewImage', 'totalStars'],
         include:['createdAt','updatedAt']
       }
     }
