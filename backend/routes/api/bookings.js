@@ -43,8 +43,14 @@ router.get('/current',async (req, res)=>{
     return res.status(200).json({Bookings:bookings})
 })
 
-router.put('/:bookingId',handleValidationErrors,async (req, res)=>{
+router.put('/:bookingId',validateBooking,async (req, res)=>{
     const {startDate, endDate} = req.body
+    const user = req.user
+    if(!user){
+      return res.status(401).json({
+        "message": "Authentication required"
+      })
+    }
     let today = new Date().toISOString().slice(0, 10)
     if(new Date(endDate) < today)return res.status(403).json({
         "message": "Past bookings can't be modified"
@@ -53,29 +59,36 @@ router.put('/:bookingId',handleValidationErrors,async (req, res)=>{
     const specBooking = await Booking.findByPk(Number(req.params.bookingId))
     if(!specBooking)return res.status(404).json({
         "message": "Booking couldn't be found"
+    })
+    if(!(specBooking.userId === user.id)){
+      return res.status(404).json({
+        "message": "Authentication required"
       })
-
-    const bookings = await Booking.findAll()
+    }
+    await specBooking.update({startDate:'0000-00-00'})
+    await specBooking.save()
+    await specBooking.update({endDate:'0000-00-01'})
+    await specBooking.save()
+    const bookings = await Booking.findAll({
+      where:specBooking.spotId
+    })
     bookings.forEach(ele=>{
-        if(!(new Date(ele.endDate).toISOString().split('T')[0] === new Date(endDate).toISOString().split('T')[0] || (new Date(endDate) <= new Date(ele.endDate)&& new Date(endDate) >= new Date(ele.startDate))))null
-        else return res.status(403).json({
-            "message": "Sorry, this spot is already booked for the specified dates",
-            "errors": {
-              "startDate": "Start date conflicts with an existing booking",
-              "endDate": "End date conflicts with an existing booking"
-            }
-          })
-        if(!(new Date(ele.startDate).toISOString().split('T')[0] === new Date(startDate).toISOString().split('T')[0] || (new Date(startDate) >= new Date(ele.startDate)&& new Date(startDate) <= new Date(ele.endDate))))return true
-        else return res.status(403).json({
-            "message": "Sorry, this spot is already booked for the specified dates",
-            "errors": {
-              "startDate": "Start date conflicts with an existing booking",
-              "endDate": "End date conflicts with an existing booking"
-            }
-          })
+      if(!(new Date(ele.startDate).getDate() === new Date(startDate).getDate() || ((new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) > new Date(ele.endDate))||(new Date(startDate) < new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate)))))null
+      else if(!(new Date(ele.startDate).getDate() === new Date(startDate).getDate() || ((new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) > new Date(ele.endDate))||(new Date(startDate) < new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate)))))return true
+      else return res.status(403).json({
+        "message": "Sorry, this spot is already booked for the specified dates",
+        "errors": {
+          "startDate": "Start date conflicts with an existing booking",
+          "endDate": "End date conflicts with an existing booking"
+        }
+      })
     })
     if(startDate && endDate){
+        await specBooking.update({startDate:startDate})
+        await specBooking.save()
         specBooking.startDate = startDate
+        await specBooking.update({endDate:endDate})
+        await specBooking.save()
         specBooking.endDate = endDate
     }
     return res.status(200).json(specBooking)

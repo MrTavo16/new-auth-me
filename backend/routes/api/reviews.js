@@ -88,11 +88,23 @@ router.delete('/:reviewId',async (req, res)=>{
 router.put('/:reviewId', 
     validateReviews,
     async (req, res)=>{
+    const user = req.user
+    if(!user){
+        return res.status(401).json({
+          "message": "Authentication required"
+        })
+    }
+    
     const reviewId = Number(req.params.reviewId)
     const reviewCheck = await Review.findByPk(reviewId)
     if(!reviewCheck){
         return res.status(404).json({
             "message": "Review couldn't be found"
+          })
+    }
+    if(!(user.id === reviewCheck.userId)){
+        return res.status(401).json({
+            "message": "Authentication required"
           })
     }
     const {review, stars} = req.body

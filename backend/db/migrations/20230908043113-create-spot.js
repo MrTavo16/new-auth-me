@@ -73,6 +73,9 @@ module.exports = {
         min:0,
         defaultValue:0
       },
+      previewImage:{
+        type:Sequelize.STRING,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
