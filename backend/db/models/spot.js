@@ -92,9 +92,6 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
 
     },
-    totalStars:{
-      type:DataTypes.INTEGER
-    }
   }, {
     sequelize,
     modelName: 'Spot',

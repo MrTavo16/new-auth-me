@@ -76,9 +76,6 @@ module.exports = {
       previewImage:{
         type:Sequelize.STRING,
       },
-      totalStars:{
-        type:Sequelize.INTEGER
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
