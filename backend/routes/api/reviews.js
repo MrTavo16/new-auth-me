@@ -54,7 +54,9 @@ router.post('/:reviewId/images',async (req, res)=>{
 
     if(reviewAdd.ReviewImages.length >= 10) return res.status(403).json({"message": "Maximum number of images for this resource was reached"})
     if(!reviewAdd) return res.status(404).json({message:"Review couldn't be found"})
-    if(!(reviewAdd.userId === currUser))throw new Error('only owner can add an image')
+    if(!(reviewAdd.userId === currUser))return res.status(401).json({
+      "message": "Authentication required"
+    })
     const newImg = await Image.create({url, previewImage, imageableId, imageableType})
     return res.status(200).json({
         id:newImg.id,
