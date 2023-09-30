@@ -51,11 +51,14 @@ router.post('/:reviewId/images',async (req, res)=>{
     const reviewAdd = await Review.findByPk(imageableId,{
         include:{model:Image, as:'ReviewImages'}
     })
-
     if(reviewAdd.ReviewImages.length >= 10) return res.status(403).json({"message": "Maximum number of images for this resource was reached"})
     if(!reviewAdd) return res.status(404).json({message:"Review couldn't be found"})
     if(!(reviewAdd.userId === currUser))return res.status(401).json({
       "message": "Authentication required"
+    })
+    const spotCheck = await Spot.findByPk(reviewAdd.spotId)
+    if(!spotCheck)return res.status(404).json({
+      "message": "Spot couldn't be found"
     })
     const newImg = await Image.create({url, previewImage, imageableId, imageableType})
     return res.status(200).json({
@@ -75,7 +78,7 @@ router.delete('/:reviewId',async (req, res)=>{
         "message": "Review couldn't be found"
       })
     const spot = await Spot.findByPk(review.spotId)
-    
+
     await Spot.decrement({numReviews: 1}, { where: { id: review.spotId} })
     console.log(spot.numReviews)
     if(review.userId === currUser){
@@ -95,7 +98,7 @@ router.put('/:reviewId',
     const user = req.user
     if(!user){
         return res.status(401).json({
-          "message": "Forbidden"
+          "message": "Authentication required"
         })
     }
     

@@ -10,21 +10,6 @@ const validateBooking = [
     check("startDate")
       .exists()
       .isISO8601(),
-      // .custom(async (value,{req, location, path} )=>{
-      //   const bookings = await Booking.findAll({
-      //     where:{
-      //       spotId:Number(req.params.spotId)
-      //     }
-      //   })
-      //   bookings.forEach(ele=>{
-      //       // console.log(new Date(ele.startDate).toISOString().split('T')[0] === new Date(value).toISOString().split('T')[0],'------------------')
-      //       console.log((new Date(value) > new Date(ele.startDate)&&(new Date(value) < new Date(ele.endDate))),'---------val gt---------')
-      //       console.log((new Date(value) < new Date(ele.startDate)&&(new Date(value) > new Date(ele.endDate))),'---------val lt---------')
-      //       if(!(new Date(ele.startDate).getDate() === new Date(value).getDate() || ((new Date(value) > new Date(ele.startDate)&& new Date(value) > new Date(ele.endDate))||(new Date(value) < new Date(ele.startDate)&& new Date(value) < new Date(ele.endDate)))))null
-      //       else if(!(new Date(ele.startDate).getDate() === new Date(value).getDate() || ((new Date(value) > new Date(ele.startDate)&& new Date(value) > new Date(ele.endDate))||(new Date(value) < new Date(ele.startDate)&& new Date(value) < new Date(ele.endDate)))))return true
-      //       else throw new Error("Start date conflicts with an existing booking") 
-      //   })
-      // }),
     check("endDate")
     .exists()
     .isISO8601()
@@ -132,6 +117,10 @@ const validateSpots = [
       .withMessage("Longitude is not valid"),
     check('name')
       .exists({checkNull:true,checkFalsy:true})
+      .custom((value,{req, location, path})=>{
+        if(!(value.length >= 50))return true
+        else throw new Error("Name must be less than 50 characters")
+      })
       .withMessage("Name must be less than 50 characters"),
     check('description')
       .exists({checkNull:true,checkFalsy:true})
@@ -339,6 +328,11 @@ router.get('/',checkingQueries,async (req, res)=>{
         const spotId = Number(req.params.spotId)
         const user = req.user
         const spot = await Spot.findByPk(spotId)
+        if(!user){
+          res.status(401).json({
+            "message": "Authentication required"
+          })
+        }
         if(!spot){
           return res.status(404).json({
             "message": "Spot couldn't be found"
@@ -446,14 +440,14 @@ router.post('/:spotId/reviews',
         const spotCheck = await Spot.findByPk(imageableId,{
           include:{model:Image, as:'SpotImages'}
         })
-        if(!(spotCheck.ownerId === req.user.id)){
-            return res.status(403).json({
-              "message": "Forbidden"
-            })
-        }
         if(!spotCheck){
             return res.status(404).json({
                 "message": "Spot couldn't be found"
+            })
+        }
+        if(!(spotCheck.ownerId === req.user.id)){
+            return res.status(403).json({
+              "message": "Forbidden"
             })
         }
         if(spotCheck.SpotImages.length){
@@ -510,7 +504,12 @@ router.post('/:spotId/reviews',
 router.put('/:spotId',
         validateSpots,
         async (req, res)=>{
-      
+        const user = req.user
+        if(!user){
+          res.status(401).json({
+            "message": "Authentication required"
+          })
+        }
         const {address ,city, state, country, lat, lng, name, description, price} = req.body
         const spotId = Number(req.params.spotId)
         const spot = await Spot.findByPk(spotId)
@@ -521,7 +520,7 @@ router.put('/:spotId',
         }
         if(!(spot.ownerId === req.user.id)){
           return res.status(401).json({
-            "message": "Forbidden"
+            "message": "Authentication required"
           })
         }
         if(address){
