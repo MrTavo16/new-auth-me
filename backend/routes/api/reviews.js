@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
-const { Spot, Image, User, Review } = require('../../db/models')
+const { Spot, Image, User, Review } = require('../../db/models');
+const { requireAuth } = require('../../utils/auth');
 
 
 const validateReviews = [
@@ -67,7 +68,7 @@ router.post('/:reviewId/images',async (req, res)=>{
     })
 })
 
-router.delete('/:reviewId',async (req, res)=>{
+router.delete('/:reviewId',requireAuth,async (req, res)=>{
     const user = req.user
     if(!user)return res.status(401).json({
         "message": "Authentication required"

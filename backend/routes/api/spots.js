@@ -5,6 +5,7 @@ const  { query } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
 const { Spot, Image, User, Review, Booking } = require('../../db/models')
 const { Op } = require('sequelize')
+const { requireAuth } = require('../../utils/auth')
 
 const validateBooking = [
     check("startDate")
@@ -477,7 +478,7 @@ router.post('/:spotId/reviews',
         res.json(sortedImg)
     })
 
-    router.delete('/:spotId',async (req, res)=>{
+    router.delete('/:spotId',requireAuth,async (req, res)=>{
         const user = req.user
         if(!user)return res.status(401).json({
           "message": "Authentication required"
