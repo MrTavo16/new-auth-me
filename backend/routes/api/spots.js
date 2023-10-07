@@ -268,7 +268,7 @@ router.get('/',checkingQueries,async (req, res)=>{
             where:{
                 spotId:Number(req.params.spotId)
             },
-            include:[{model:Image,as:'ReviewImages'}]
+            include:[{model:User},{model:Image,as:'ReviewImages'}]
         })
         if(!reviews.length){
             return res.status(404).json({
@@ -292,35 +292,56 @@ router.get('/',checkingQueries,async (req, res)=>{
         const userId = req.user.id
         const startDate = req.body.startDate
         const spotCheck = await Spot.findByPk(spotId)
-          if(!spotCheck){
-              return res.status(404).json({
-                  "message": "Spot couldn't be found"
-                })
-          }
+        if(!spotCheck){
+          return res.status(404).json({
+              "message": "Spot couldn't be found"
+           })
+         }
+              
+        if(userId === spotCheck.ownerId)return res.status(403).json({
+            "message": "Forbidden"
+        })
         const bookings = await Booking.findAll({
           where:{
             spotId:spotId
           }
         })
-        if(!bookings){
+
+        if(!bookings.length){
           const bookingCreated = await Booking.create({spotId, userId, startDate, endDate})
           return res.status(200).json(bookingCreated)
         }
-        bookings.forEach(ele=>{
-          if(!(new Date(ele.startDate).getDate() === new Date(startDate).getDate() || ((new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) > new Date(ele.endDate))||(new Date(startDate) < new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate)))))null
-          else if(!(new Date(ele.startDate).getDate() === new Date(startDate).getDate() || ((new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) > new Date(ele.endDate))||(new Date(startDate) < new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate)))))return true
-          else return res.status(403).json({
+        for(let i = 0;i < bookings.length;i++){
+          let currBooking = bookings[i]
+          if(!(new Date(currBooking.startDate).getDate() === new Date(startDate).getDate() ||new Date(currBooking.endDate).getDate() === new Date(startDate).getDate()
+          || ((new Date(startDate) > new Date(currBooking.startDate)&& new Date(startDate) < new Date(currBooking.endDate))//---------
+          ||(new Date(startDate) > new Date(currBooking.startDate)&& new Date(startDate) < new Date(currBooking.endDate)))))null
+          else if(!(new Date(currBooking.endDate).getDate() === new Date(endDate).getDate() ||new Date(currBooking.startDate).getDate() === new Date(endDate).getDate()
+          || ((new Date(endDate) > new Date(currBooking.startDate)&& new Date(endDate) < new Date(currBooking.endDate))
+          ||(new Date(endDate) > new Date(currBooking.startDate)&& new Date(endDate) < new Date(currBooking.endDate)))))return true
+          else return res.status(400).json({
             "message": "Sorry, this spot is already booked for the specified dates",
             "errors": {
               "startDate": "Start date conflicts with an existing booking",
               "endDate": "End date conflicts with an existing booking"
             }
           })
-        })
-
-        if(userId === spotCheck.ownerId)return res.status(403).json({
-          "message": "Forbidden"
-        })
+        }
+        // bookings.forEach(ele=>{
+        //   if(!(new Date(ele.startDate).getDate() === new Date(startDate).getDate() ||new Date(ele.endDate).getDate() === new Date(startDate).getDate()
+        //   || ((new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate))//---------
+        //   ||(new Date(startDate) > new Date(ele.startDate)&& new Date(startDate) < new Date(ele.endDate)))))null
+        //   else if(!(new Date(ele.endDate).getDate() === new Date(endDate).getDate() ||new Date(ele.startDate).getDate() === new Date(endDate).getDate()
+        //   || ((new Date(endDate) > new Date(ele.startDate)&& new Date(endDate) < new Date(ele.endDate))
+        //   ||(new Date(endDate) > new Date(ele.startDate)&& new Date(endDate) < new Date(ele.endDate)))))return true
+        //   else return res.status(403).json({
+        //     "message": "Sorry, this spot is already booked for the specified dates",
+        //     "errors": {
+        //       "startDate": "Start date conflicts with an existing booking",
+        //       "endDate": "End date conflicts with an existing booking"
+        //     }
+        //   })
+        // })
         const bookingCreated = await Booking.create({spotId, userId, startDate, endDate})
         return res.status(200).json(bookingCreated)
     })

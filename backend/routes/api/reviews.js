@@ -32,7 +32,7 @@ router.get('/current', async (req, res)=>{
         where:{
             userId:currUser
         },
-        include:[{model:Spot}, {model:Image, as:'ReviewImages'}]
+        include:[{model:User},{model:Spot}, {model:Image, as:'ReviewImages'}]
     })
     return res.status(200).json({
         Reviews:reviewCheck
@@ -52,8 +52,8 @@ router.post('/:reviewId/images',async (req, res)=>{
     const reviewAdd = await Review.findByPk(imageableId,{
         include:{model:Image, as:'ReviewImages'}
     })
-    if(reviewAdd.ReviewImages.length >= 10) return res.status(403).json({"message": "Maximum number of images for this resource was reached"})
     if(!reviewAdd) return res.status(404).json({message:"Review couldn't be found"})
+    if(reviewAdd.ReviewImages.length >= 10) return res.status(403).json({"message": "Maximum number of images for this resource was reached"})
     if(!(reviewAdd.userId === currUser))return res.status(401).json({
       "message": "Authentication required"
     })

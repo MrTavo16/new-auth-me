@@ -36,7 +36,7 @@ router.delete('/:imageId',async (req, res)=>{
             "message": "Successfully deleted"
           })
     }else{
-        return res.status(400).json({message:'Forbidden'})
+        return res.status(403).json({message:'Forbidden'})
     }
 })
 
