@@ -1,6 +1,6 @@
 'use strict';
 
-const { User } = require('../models');
+const { User, Spot, Review, Image, Booking } = require('../models');
 const bcrypt = require("bcryptjs");
 
 let options = {};
@@ -33,6 +33,20 @@ module.exports = {
         hashedPassword: bcrypt.hashSync('password3')
       }
     ], { validate: true });
+    // await Spot.bulkCreate([
+    //   {
+    //     "address": "123 universal st",
+    //     "city": "Maimi",
+    //     "state": "Florida",
+    //     "country": "United States of America",
+    //     "lat": 37.7645358,
+    //     "lng": -122.4730327,
+    //     "name": "App Academy",
+    //     "description": "Place where web developers are created",
+    //     "price": 123
+    //   }
+    // ],{validate:true})
+    // await Review.bulkCreate()
   },
 
   async down (queryInterface, Sequelize) {
