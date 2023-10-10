@@ -68,7 +68,7 @@ router.post('/:reviewId/images',async (req, res)=>{
     })
 })
 
-router.delete('/:reviewId',requireAuth,async (req, res)=>{
+router.delete('/:reviewId',async (req, res)=>{
     const user = req.user
     if(!user)return res.status(401).json({
         "message": "Authentication required"

@@ -509,7 +509,7 @@ router.post('/:spotId/reviews',
         res.json(sortedImg)
     })
 
-    router.delete('/:spotId',requireAuth,async (req, res)=>{
+    router.delete('/:spotId',async (req, res)=>{
         const user = req.user
         if(!user)return res.status(401).json({
           "message": "Authentication required"
