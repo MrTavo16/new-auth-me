@@ -410,13 +410,13 @@ router.post('/:spotId/reviews',
                 "message": "Spot couldn't be found"
               })
         }
-        const userCheck = await User.findByPk(req.user.id,{
+        const userCheck = await User.findByPk(userId,{
           include:{
             model:Review
           }
         })
-        if(userCheck.Reviews){
-          for(let i = 0;i < userCheck.Reviews;i++){
+        if(userCheck.Reviews.length){
+          for(let i = 0;i < userCheck.Reviews.length;i++){
             const rev = userCheck.Reviews[i]
             if(rev.spotId === spotId){
               return res.status(500).json({
