@@ -20,6 +20,7 @@ router.delete('/:imageId',async (req, res)=>{
     if(!spotImg)return res.status(404).json({
         "message": "Spot Image couldn't be found"
     })
+    const imgableId = spotImg.imageableId
     const spots = await Spot.findAll({
         include:{model:Image,as:'SpotImages'},
         where:{
@@ -27,14 +28,31 @@ router.delete('/:imageId',async (req, res)=>{
         }
     })
 
-    
     if(spots[0].ownerId === currUser){
         await spotImg.destroy()
+        const spotsB = await Spot.findAll({
+            include:{model:Image,as:'SpotImages'},
+            where:{
+                id:imgableId
+            }
+        })
+        if(!spotsB[0].SpotImages.length){
+            await spotsB[0].update({previewImage:''})
+            await spotsB[0].save()
+        }
+        if(spotsB[0].SpotImages.length){
+            await spotsB[0].SpotImages[0].update({previewImage:true})
+            await spotsB[0].SpotImages[0].save()
+            const url = spotsB[0].SpotImages[0].url
+            await spotsB[0].update({previewImage:url})
+            spotsB[0].previewImage = url
+            await spotsB[0].save()
+        }
         return res.status(200).json({
             "message": "Successfully deleted"
         })
     }else{
-        return res.status(400).json({message:'Forbidden'})
+        return res.status(403).json({message:'Forbidden'})
     }
 })
 

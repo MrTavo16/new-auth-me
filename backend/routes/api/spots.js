@@ -15,7 +15,7 @@ const validateBooking = [
     .exists()
     .isISO8601()
     .custom(async (value, {req, location, path})=>{
-        if(!(new Date(value) < new Date(req.body.startDate)))return true
+        if(!(new Date(value) <= new Date(req.body.startDate)))return true
         else throw new Error("endDate cannot come before startDate")
     }),
     handleValidationErrors
@@ -332,10 +332,10 @@ router.get('/',checkingQueries,async (req, res)=>{
           let bookingStart = new Date(currBooking.startDate);
           let bookingEnd = new Date(currBooking.endDate);
       
-          if ((bookingStart >= new Date(endDate) || bookingEnd <= new Date(startDate))) {
+          if ((bookingStart > new Date(endDate) || bookingEnd < new Date(startDate))) {
               continue;
           } else {
-              return res.status(400).json({
+              return res.status(403).json({
                   "message": "Sorry, this spot is already booked for the specified dates",
                   "errors": {
                       "startDate": "Start date conflicts with an existing booking",
@@ -416,13 +416,21 @@ router.post('/:spotId/reviews',
           }
         })
         if(userCheck.Reviews){
-          userCheck.Reviews.forEach(ele => {
-            if(ele.spotId === spotId){
-                res.status(500).json({
-                    "message": "User already has a review for this spot"
-                  })
+          for(let i = 0;i < userCheck.Reviews;i++){
+            const rev = userCheck.Reviews[i]
+            if(rev.spotId === spotId){
+              return res.status(500).json({
+                "message": "User already has a review for this spot"
+              })
             }
-        });  
+          }
+        //   userCheck.Reviews.forEach(ele => {
+        //     if(ele.spotId === spotId){
+        //         return res.status(500).json({
+        //             "message": "User already has a review for this spot"
+        //           })
+        //     }
+        // });  
         }
         if(review && stars){
           const newReview = await Review.create({userId, spotId, review, stars}) 
@@ -453,11 +461,13 @@ router.post('/:spotId/reviews',
            return res.status(201).json(newReview)
         }
     })
-
+    
     router.post('/:id/images',async (req, res)=>{
-        const imageableId = Number(req.params.id)
-        const imageableType = 'SpotPics'
-        const user = req.user
+      const imageableId = Number(req.params.id)
+      const imageableType = 'SpotPics'
+      const user = req.user
+      const { url} = req.body
+      const previewImage = req.body.preview
         if(!user)return res.status(401).json({
           "message": "Authentication required"
         })
@@ -476,15 +486,13 @@ router.post('/:spotId/reviews',
         }
         if(spotCheck.SpotImages.length){
           spotCheck.SpotImages.forEach(async ele=>{
-            if(ele.previewImage === true){
+            if(ele.previewImage === true && previewImage === true){
               await ele.update({ previewImage: false })
               await ele.save()
             }
           })
 
         }
-        const { url} = req.body
-        const previewImage = req.body.preview
         
         const spotImg = await Image.create({url, previewImage, imageableId, imageableType})
         if(previewImage === true){
@@ -518,7 +526,7 @@ router.post('/:spotId/reviews',
                 "message": "Successfully deleted"
               })
         }else{
-            return res.status(401).json({
+            return res.status(403).json({
               "message": "Forbidden"
             })
         }
@@ -543,8 +551,8 @@ router.put('/:spotId',
           })
         }
         if(!(spot.ownerId === req.user.id)){
-          return res.status(401).json({
-            "message": "Authentication required"
+          return res.status(403).json({
+            "message": "Forbidden"
           })
         }
         if(address){

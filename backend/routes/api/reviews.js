@@ -89,7 +89,7 @@ router.delete('/:reviewId',requireAuth,async (req, res)=>{
             "message": "Successfully deleted"
           })
     }else{
-        return res.status(400).json({message:'Forbidden'})
+        return res.status(403).json({message:'Forbidden'})
     }
 })
 
@@ -111,18 +111,22 @@ router.put('/:reviewId',
           })
     }
     if(!(user.id === reviewCheck.userId)){
-        return res.status(401).json({
-            "message": "Authentication required"
+        return res.status(403).json({
+            "message": "Forbidden"
           })
     }
     const {review, stars} = req.body
     if(review){
-        reviewCheck.review = review
+      reviewCheck.review = review
+      await reviewCheck.update({review:review})
+      await reviewCheck.save()
     }
     if(stars){
-    reviewCheck.stars = stars
+      reviewCheck.stars = stars
+      await reviewCheck.update({stars:stars})
+      await reviewCheck.save()
     }
-    res.json(reviewCheck)
+    return res.json(reviewCheck)
 })
 
 
