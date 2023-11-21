@@ -24,6 +24,8 @@ const ManageSpots = () => {
     return (
         <section>
             {isLoaded && <div>
+                <h1>Manage Your Spots</h1>
+                <button onClick={()=>history.push('/spots/new')}>Create a New Spot</button>
                 {Object.values(spots).map((spot) => {
                     return (
                         <div key={spot.id}>

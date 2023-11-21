@@ -40,7 +40,7 @@ export const createReview = (review) =>async (dispatch)=>{
     console.log(res, 'res')
     if(res.ok){
         const data = await res.json()
-        console.log(data)
+        // console.log(data)
         dispatch(recieveReview(data))
         return data
     }
@@ -72,7 +72,7 @@ const reviewReducer = (state = {}, action)=>{
             })
             return newState
         case RECIEVE_REVIEW:
-            console.log(action.review)
+            // console.log(action.review)
             return {...state, [action.review.id]:action.review}
         case REMOVE_REVIEW:
             const newState1 = {...state}
