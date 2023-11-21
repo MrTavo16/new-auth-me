@@ -264,13 +264,14 @@ router.get('/',checkingQueries,async (req, res)=>{
 
     router.get('/:spotId/reviews',async (req, res)=>{
         // const spotI = Number(req.params.spotId)
+        const spotCheck = await Spot.findByPk(Number(req.params.spotId))
         const reviews = await Review.findAll({
             where:{
                 spotId:Number(req.params.spotId)
             },
             include:[{model:User},{model:Image,as:'ReviewImages'}]
         })
-        if(!reviews.length){
+        if(!spotCheck){
             return res.status(404).json({
                 "message": "Spot couldn't be found"
               })
@@ -457,7 +458,7 @@ router.post('/:spotId/reviews',
           // console.log(starCount,'starCount --------')
           // console.log(starCount/numOfRev)
           // console.log(spotCheck,'----------------spotcheck after-------')
-
+          newReview.dataValues.User = req.user;
            return res.status(201).json(newReview)
         }
     })
