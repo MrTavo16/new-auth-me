@@ -82,7 +82,6 @@ export const updateSpot = (spot) =>async (dispatch)=>{
     
     if(res.ok){
         const data = await res.json()
-        console.log(data, '-----------')
         dispatch(editSpot(data))
       }
       return res

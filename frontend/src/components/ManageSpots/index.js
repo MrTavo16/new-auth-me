@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { getSpotsOfCurrUser } from '../../store/spots';
 import SpotBox from '../SpotBox';
 import { useHistory } from "react-router-dom"
+import DeleteSpot from '../DeleteSpot';
+import OpenModalButton from '../OpenModalButton';
 
 
 const ManageSpots = () => {
@@ -28,7 +30,12 @@ const ManageSpots = () => {
                             <SpotBox spot={spot} />
                             <div>
                                 <button onClick={()=>history.push(`/spots/${spot.id}/edit`)}>Update</button>
-                                <button>Delete</button>
+                                <>
+                                    <OpenModalButton
+                                        buttonText="Delete"
+                                        modalComponent={<DeleteSpot spotId={spot.id} />}
+                                    />
+                                </>
                             </div>
                         </div>
                     )
