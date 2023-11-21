@@ -6,6 +6,8 @@ import Navigation from "./components/Navigation";
 import HomePage from "./components/HomePage"
 import SpotDetails from "./components/SpotDetails"
 import CreateSpotForm from "./components/CreateSpotForm";
+import ManageSpots from "./components/ManageSpots";
+import UpdateSpotForm from "./components/UpdateSpotForm";
 
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
       {isLoaded && <Switch>
         <Route exact path="/" component={HomePage}/>
         <Route exact path='/spots/new' component={CreateSpotForm}/>
+        <Route exact path='/spots/current' component={ManageSpots}/>
+        <Route exact path='/spots/:spotId/edit' component={UpdateSpotForm}/>
         <Route exact path='/spots/:spotId' component={SpotDetails}/>
         </Switch>}
     </>
