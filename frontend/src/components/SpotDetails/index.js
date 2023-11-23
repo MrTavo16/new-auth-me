@@ -8,8 +8,9 @@ import OpenModalButton from '../OpenModalButton';
 import DeleteReview from '../DeleteReview';
 
 const SpotDetails = () => {
-    const [isLoaded, setIsLoaded] = useState(false)
+    const [isLoaded, setIsLoaded] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [avgStar, setAvgStar] = useState(false)
     const dispatch = useDispatch()
     const spotId = Number(useParams().spotId)
     const spot = useSelector(state => state.spots[`${spotId}`])
@@ -21,30 +22,32 @@ const SpotDetails = () => {
     ];
     // console.log(reviews)
 
-    const handleFirstPic = () => {
-        if (spot.SpotImages.length) {
-            return spot.SpotImages[0].url
-        }
-    }
-
     useEffect(() => {
         if (isLoaded) {
             if (user) {
-                for(let i = 0;i <reviews.length;i++){
+                if(!(user.id === spot.Owner.id)&&!reviews.length){
+                    setShowMenu(true)
+                }
+                for(let i = 0;i <reviews.length ;i++){
                     const review = reviews[i]
                     if (!(user.id === spot.Owner.id) && !(user.id === review.User.id)) {
-                        setShowMenu(true)
+                        return setShowMenu(true)
                     }else{
-                        setShowMenu(false)
-                        return
+                        return setShowMenu(false)
                     }
                 }
             }else{
                 setShowMenu(false)
             }
+            
+            if(!(spot.avgStarRating === undefined)){
+                setAvgStar(true)
+            }else{
+                setAvgStar(false)
+            }
         }
-    }, [user,reviews, spot])
-
+    }, [isLoaded, user, reviews, spot, avgStar])
+    
     const closeMenu = () => setShowMenu(false);
 
     // console.log(showMenu)
@@ -55,7 +58,7 @@ const SpotDetails = () => {
             setIsLoaded(true)
         })
     }, [dispatch])
-
+    // console.log(spot.SpotImages)
     return (<section>
         {isLoaded && <>
 
@@ -63,10 +66,11 @@ const SpotDetails = () => {
             <h3>{spot.city}, {spot.state}, {spot.country}</h3>
 
             <div>
-                <img src={handleFirstPic} />
+                <img src={spot.SpotImages[0].url} />
             </div>
             <div>
                 {spot.SpotImages.slice(1).map((img) => {
+                    console.log(img)
                     return <img key={img.url} src={img.url} />
                 })}
             </div>
@@ -75,14 +79,18 @@ const SpotDetails = () => {
             <div>
                 <div>
                     <label>${spot.price} night </label>
-                    {reviews.length ? <label>{spot.avgStarRating.toFixed(1)} · {spot.numReviews} reviews</label> : <label>{spot.avgStarRating.toFixed(1)}</label>}
+                    {reviews.length === 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} review</label> : <></>}
+                    {reviews.length > 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> : <></>}
+                    {!reviews.length ? <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>: <></>}
                 </div>
                 <button>Reserve</button>
             </div>
 
             <div>----------------------------------</div>
 
-            {reviews.length ? <label>{spot.avgStarRating.toFixed(1)} · {spot.numReviews} reviews</label> : <label>New!</label>}
+            {avgStar&&reviews.length === 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} review</label> : <></>}
+            {avgStar&&reviews.length > 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> :<></>}
+            {!reviews.length ?  <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>:<></>}
             <div>
 
                 {showMenu && <>
@@ -108,7 +116,7 @@ const SpotDetails = () => {
                                     <OpenModalButton
                                         buttonText="Delete"
                                         onItemClick={closeMenu}
-                                        modalComponent={<DeleteReview reviewId={review.id} />}
+                                        modalComponent={<DeleteReview spotId={spot.id} reviewId={review.id} />}
                                     />
                                 </>
                             </div>

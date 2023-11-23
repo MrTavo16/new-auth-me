@@ -4,6 +4,7 @@ const LOAD_SPOTS = 'spots/LOAD_SPOTS'
 const RECIEVE_SPOT = 'spots/RECIEVE_SPOT'
 const UPDATE_SPOT = 'spots/UPDATE_SPOT'
 const REMOVE_SPOT = 'spots/REMOVE_SPOT'
+const ADD_IMAGE = 'spots/ADD_IMAGE'
 //---------------------------
 export const loadSpots = (spots)=>({
     type:LOAD_SPOTS,
@@ -24,7 +25,26 @@ export const removeSpot = (spotId)=>({
     type:REMOVE_SPOT,
     spotId
 })
+
+export const recieveImage = (img)=>({
+    type: ADD_IMAGE,
+    img
+})
 //---------------------------
+export const addImage = (img)=>async (dispatch)=>{
+    console.log(img.spotId,'store -----')
+    const res = await csrfFetch(`/api/spots/${img.spotId}/images`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(img)
+    })
+    if(res.ok){
+        const data = await res.json()
+        return data
+    }
+    return res
+}
+
 export const getAllSpots = ()=>async (dispatch)=>{
     const res = await fetch('/api/spots')
     if(res.ok){

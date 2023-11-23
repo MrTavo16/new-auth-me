@@ -24,7 +24,8 @@ function LoginFormModal() {
       });
   };
 
-  const handleDemoUser = ()=>{
+  const handleDemoUser = (e)=>{
+    e.preventDefault();
     setCredential('Demo-lition')
     setPassword('password')
     setErrors({});
@@ -61,10 +62,12 @@ function LoginFormModal() {
           />
         </label>
 
-        <button onClick={handleDemoUser}>Demo User</button>
         {errors.credential && (
           <p>{errors.credential}</p>
         )}
+        <form onSubmit={handleDemoUser}>
+        <button type="submit">Demo User</button>
+        </form>
         <button type="submit">Log In</button>
       </form>
     </>

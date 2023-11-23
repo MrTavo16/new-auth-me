@@ -1,16 +1,21 @@
 import { useDispatch } from "react-redux";
 import { deleteReview } from "../../store/reviews";
 import { useModal } from "../../context/Modal";
+import { useHistory } from 'react-router-dom'
 
 
-const DeleteReview=({reviewId})=>{
+const DeleteReview=({spotId, reviewId})=>{
     console.log(reviewId)
+    const history = useHistory()
     const { closeModal } = useModal();
     const dispatch = useDispatch()
 
     const handleYes = ()=>{
         dispatch(deleteReview(reviewId))
-            .then(closeModal)
+        .then(()=>{
+            history.push(`/spots/${spotId}`)
+        })
+        .then(closeModal)
     }
 
     return(<div>

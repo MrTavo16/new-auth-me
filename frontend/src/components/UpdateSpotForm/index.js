@@ -9,6 +9,7 @@ import { updateSpot } from "../../store/spots";
 function UpdateSpotForm(){
     const history = useHistory()
     const [isLoaded, setIsLoaded] = useState(false)
+    const [submited, setSubmited] = useState(false)
     const dispatch = useDispatch();
     const {spotId} = useParams()
     const spots = Object.values(useSelector(state=>state.spots))
@@ -37,16 +38,37 @@ function UpdateSpotForm(){
         })
         
         const currErrors = {}
-        // if(!previewImg.length){
-        //     currErrors.img = 'Preview image is required'
-        // }
-        // if(!(previewImg.endsWith('.png')||previewImg.endsWith('.jpg')||previewImg.endsWith('.jpeg'))){
-        //     currErrors.imgEnds = "Image URL must end in .png, .jpg, or .jpeg"
-        // }
-        if(description < 30)currErrors.description = "Description need 30 or more characters"
+        if (submited) {
+            if (!address.length) {
+                currErrors.address = 'Address is required'
+            }
+            if (!city.length) {
+                currErrors.city = 'City is required'
+            }
+            if (!state.length) {
+                currErrors.state = 'State is required'
+            }
+            if (!country.length) {
+                currErrors.country = 'Country is required'
+            }
+            if (!longitude.length || isNaN(Number(longitude)) || !(longitude >= -180 && longitude <= 180)) {
+                currErrors.longitude = 'Longitute needs to be between -180 and 180'
+            }
+            if (!price.length || isNaN(Number(longitude))) {
+                currErrors.price = 'Price'
+            }
+            if (!latitude.length || isNaN(Number(latitude)) || !(latitude >= -90 && latitude <= 90)) {
+                currErrors.latitude = 'latitude needs to be between -90 and 90'
+                console.log(currErrors.latitude)
+            }
+            
+            if (description < 30) currErrors.description = "Description need 30 or more characters"
+            if (!spotName.length) currErrors.spotName = "Spot Name is required"
+            setErrors(currErrors)
+        }
+        
         setImgErrors(currErrors)
-        if(!spotName.length)currErrors.spotName = "Spot Name is required"
-    },[previewImg, img, img1, img2, img3, description, spotName])
+    },[submited, description, spotName, longitude, latitude, address, city, state, country, price])
 
     useEffect(()=>{
         if(isLoaded){
@@ -82,10 +104,13 @@ function UpdateSpotForm(){
             const data = await res.json()
             if(data && data.errors){
                 setErrors(data.errors)
+                setSubmited(true)
             }
         }).then((spot)=>{
-            // console.log(spot,'--------------')
-            history.push(`/spots/${currSpot[0].id}`)
+            console.log(spot,'--------------')
+            if(spot){
+                history.push(`/spots/${currSpot[0].id}`)
+            }
         })
     }
 
