@@ -2,6 +2,8 @@
 // backend/bin/www
 
 // Import environment variables
+// const path = require('path')
+// require('dotenv').config({path:require('find-config')('.env')});
 require('dotenv').config();
 
 const { port } = require('../config');
