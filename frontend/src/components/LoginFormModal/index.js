@@ -25,11 +25,14 @@ function LoginFormModal() {
   };
 
   const handleDemoUser = (e)=>{
-    e.preventDefault();
+    // e.preventDefault();
     setCredential('Demo-lition')
     setPassword('password')
     setErrors({});
-    return dispatch(sessionActions.login({ credential, password }))
+    return dispatch(sessionActions.login({ 
+      "credential":"Demo-lition"
+    , "password":"password"
+    }))
       .then(closeModal)
       .catch(async (res) => {
         const data = await res.json();
@@ -62,12 +65,11 @@ function LoginFormModal() {
           />
         </label>
 
+        <div onClick={handleDemoUser}>Demo User</div>
         {errors.credential && (
           <p>{errors.credential}</p>
         )}
-        <form onSubmit={handleDemoUser}>
-        <button type="submit">Demo User</button>
-        </form>
+
         <button type="submit">Log In</button>
       </form>
     </>

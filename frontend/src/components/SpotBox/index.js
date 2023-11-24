@@ -7,6 +7,7 @@ import { getReviewById } from '../../store/reviews';
 const SpotBox = ({ spot }) => {
     // console.log(spot)
     const [isLoaded, setIsLoaded] = useState(false)
+    const [loadedPreviewImg, setLoadedPreviewImg] = useState(false)
     const [isNew, setIsNew] = useState(true)
     const dispatch = useDispatch()
     const history = useHistory()
@@ -19,7 +20,10 @@ const SpotBox = ({ spot }) => {
 
     useEffect(() => {
         dispatch(getReviewById(spot.id)).then(() => {
-            setIsLoaded(true)    
+            setIsLoaded(true)
+            if(spot.previewImage){
+                setLoadedPreviewImg(true)
+            }    
         }).then(()=>{
         })
     }, [spot, isLoaded])
@@ -27,7 +31,7 @@ const SpotBox = ({ spot }) => {
     return (<>
         {isLoaded && <>
             <div onClick={handleSpotClick}>
-                {/* {spot.previewImage && <img src={spot.previewImage} />} */}
+                {loadedPreviewImg && <img src={spot.previewImage} />}
                 <label>{spot.city}, {spot.state}</label>
                 <div>
                     <img />

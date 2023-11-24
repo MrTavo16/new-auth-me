@@ -9,6 +9,7 @@ import DeleteReview from '../DeleteReview';
 
 const SpotDetails = () => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const [imgLoaded, setImgLoaded] = useState(false)
     const [showMenu, setShowMenu] = useState(false);
     const [avgStar, setAvgStar] = useState(false)
     const dispatch = useDispatch()
@@ -45,8 +46,11 @@ const SpotDetails = () => {
             }else{
                 setAvgStar(false)
             }
+            if(spot.SpotImages.length){
+                setImgLoaded(true)
+            }
         }
-    }, [isLoaded, user, reviews, spot, avgStar])
+    }, [isLoaded, user, reviews, spot, avgStar, ])
     
     const closeMenu = () => setShowMenu(false);
 
@@ -61,19 +65,18 @@ const SpotDetails = () => {
     // console.log(spot.SpotImages)
     return (<section>
         {isLoaded && <>
-
             <h1>{spot.name}</h1>
             <h3>{spot.city}, {spot.state}, {spot.country}</h3>
 
-            <div>
-                <img src={spot.SpotImages[0].url} />
-            </div>
-            <div>
+            {imgLoaded && <><div>
+                {spot.SpotImages[0].url && <img src={spot.SpotImages[0].url} />}
+            </div></>}
+            {spot.SpotImages.length&&<div>
                 {spot.SpotImages.slice(1).map((img) => {
                     console.log(img)
                     return <img key={img.url} src={img.url} />
                 })}
-            </div>
+            </div>}
             <h3>Hosted by {spot.Owner.firstName} {spot.Owner.lastName}</h3>
             <p>{spot.description}</p>
             <div>
