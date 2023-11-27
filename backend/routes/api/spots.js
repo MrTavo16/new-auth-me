@@ -126,6 +126,11 @@ const validateSpots = [
     check('description')
       .exists({checkNull:true,checkFalsy:true})
       .withMessage("Description is required"),
+    check('description')
+    .custom((value,{req, location, path})=>{
+      if(!(value.length < 30))return true
+      else throw new Error("Description must be less than 30 characters")
+    }),
     check('price')
       .custom((value,{req, location, path})=>{
         if(value>0)return true
@@ -158,9 +163,18 @@ router.post(
             }
         })
         if(spotCheck){
-            return res.json({
-                message:'address needs to be a unique'
+            return res.status(400).json({
+                "errors":{
+                  "address":'address needs to be a unique'
+                }
             })
+        }
+        if(description.length < 30){
+          return res.status(400).json({
+            "errors":{
+              "description":"description must be 30 or more characters"
+            }
+          })
         }
         const spot = await Spot.create({ownerId ,address ,city, state, country, lat, lng, name, description, price, numReviews,avgStarRating })
         const safeSpot = {
@@ -556,6 +570,20 @@ router.put('/:spotId',
             "message": "Forbidden"
           })
         }
+        const spotCheck = await Spot.findOne({
+          where:{
+              address:req.body.address
+          }
+      })
+        // console.log(spotCheck.id)
+        if(spotCheck && !(spotCheck.id === spotId)){
+          return res.status(400).json({
+              "errors":{
+                "address":'address needs to be a unique'
+              }
+              
+          })
+      }
         if(address){
           await spot.update({address: address})
           await spot.save()
