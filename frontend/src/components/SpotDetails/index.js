@@ -9,6 +9,7 @@ import DeleteReview from '../DeleteReview';
 import './index.css'
 
 const SpotDetails = () => {
+    let imgs
     const [isLoaded, setIsLoaded] = useState(false);
     const [imgLoaded, setImgLoaded] = useState(false)
     const [showMenu, setShowMenu] = useState(false);
@@ -25,6 +26,10 @@ const SpotDetails = () => {
 
     useEffect(() => {
         if (isLoaded) {
+            if(Object.values(spot)){
+                imgs = spot.SpotImages
+                // console.log(imgs)
+            }
             if (user) {
                 if(!(user.id === spot.Owner.id)&&!reviews.length){
                     setShowMenu(true)
@@ -44,15 +49,17 @@ const SpotDetails = () => {
             if(spot.avgStarRating){
                 setAvgStar(true)
             }
-            if(spot){
+            if(Object.values(spot).length){
+                // console.log(spot)
                 setImgLoaded(true)
             }
         }
-    }, [isLoaded, user, reviews, spot, avgStar,])
+    }, [isLoaded, user, reviews, spot, avgStar])
     
     const closeMenu = () => setShowMenu(false);
 
     // console.log(spot.avgStarRating)
+
     useEffect(() => {
         dispatch(getSpotById(spotId)).then(() => {
             dispatch(getReviewById(spotId))
@@ -60,25 +67,25 @@ const SpotDetails = () => {
             setIsLoaded(true)
 
         })
-    }, [reviews.length])
+    }, [reviews.length, imgs, isLoaded])
 
     // console.log()
     // console.log()
-    // console.log()
+    // console.log(spot.SpotImages)
     return (<section>
         {isLoaded && <>
             <h1>{spot.name}</h1>
             <h4>{spot.city}, {spot.state}, {spot.country}</h4>
 
             <div className='preview-img'>
-            {spot.SpotImages[0].url ? <img src={spot.SpotImages[0].url} />:<></>}
+            {imgLoaded && spot.SpotImages.length ? <img src={spot.SpotImages[0].url} />:<></>}
             </div>
 
             <div className='other-imgs'>
-                {spot.SpotImages.slice(1).map((img) => {
+                {imgLoaded && spot.SpotImages.length ? spot.SpotImages.slice(1).map((img) => {
                     // console.log(img)
                     return <img key={img.url} src={img.url} />
-                })}
+                }):<></>}
             </div>
 
             <div className='reserve-description'>

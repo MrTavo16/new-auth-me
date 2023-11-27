@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {useHistory} from 'react-router-dom';
 import { useParams } from 'react-router-dom'
-import { getSpotById } from "../../store/spots";
+import { getSpotById, getAllSpots } from "../../store/spots";
 import { updateSpot } from "../../store/spots";
 import './updateSpot.css'
 
@@ -32,15 +32,28 @@ function UpdateSpotForm(){
     const [img3, setImg3] = useState(``)
     
     useEffect(()=>{
-        dispatch(getSpotById(spotId)).then(() => {
-        const currSpot = spots.filter(spot=>spot.id == Number(spotId))
-        setIsLoaded(true)
+        dispatch(getAllSpots()).then(()=>{
+            setIsLoaded(true)
         })
+    },[isLoaded])
+
+    useEffect(()=>{
         
         const currErrors = {}
-        if (submited) {
+        if(isLoaded){
+            let check = false
+            // console.log(spots, '-----bb')
+            // console.log(currSpot, '-----bb')
+            spots.forEach((spot)=>{
+                if(spot.address === address)check = true
+            })
+            console.log(check)
+           if (submited) {
             if (!address.length) {
                 currErrors.address = 'Address is required'
+            }
+            if(check){
+                currErrors.address = 'Address must be unique'
             }
             if (!city.length) {
                 currErrors.city = 'City is required'
@@ -62,9 +75,10 @@ function UpdateSpotForm(){
                 console.log(currErrors.latitude)
             }
             
-            if (description < 30) currErrors.description = "Description need 30 or more characters"
+            if (description.length < 30) currErrors.description = "Description need 30 or more characters"
             if (!spotName.length) currErrors.spotName = "Spot Name is required"
             setErrors(currErrors)
+            } 
         }
         
         setImgErrors(currErrors)
@@ -102,12 +116,12 @@ function UpdateSpotForm(){
             "price": Number(price)
         })).catch(async (res)=>{
             const data = await res.json()
+            console.log(data,'--------------')
             if(data && data.errors){
                 setErrors(data.errors)
                 setSubmited(true)
             }
         }).then((spot)=>{
-            console.log(spot,'--------------')
             if(spot){
                 history.push(`/spots/${currSpot[0].id}`)
             }

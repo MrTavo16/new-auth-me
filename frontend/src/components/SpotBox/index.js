@@ -2,9 +2,11 @@ import { Link, NavLink, useHistory } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getReviewById } from '../../store/reviews';
+import DeleteSpot from '../DeleteSpot';
+import OpenModalButton from '../OpenModalButton';
 import './SpotBox.css'
 
-const SpotBox = ({ spot }) => {
+const SpotBox = ({ spot, manage }) => {
     // console.log(spot)
     const [isLoaded, setIsLoaded] = useState(false)
     const [loadedPreviewImg, setLoadedPreviewImg] = useState(false)

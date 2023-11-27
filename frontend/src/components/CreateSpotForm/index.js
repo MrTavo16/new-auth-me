@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createSpot } from "../../store/spots";
 import { useHistory } from 'react-router-dom';
 import { addImage } from "../../store/spots";
+import { getAllSpots } from "../../store/spots";
 import './index.css'
 
 function CreateSpotForm() {
+    const spots = Object.values(useSelector(state=>state.spots))
+    const [isLoaded, setIsLoaded]= useState(false)
     const history = useHistory()
     const dispatch = useDispatch();
     const [submited, setSubmited] = useState(false)
@@ -26,11 +29,25 @@ function CreateSpotForm() {
     const [img2, setImg2] = useState('')
     const [img3, setImg3] = useState('')
 
+    useEffect(()=>{
+        dispatch(getAllSpots()).then(()=>{
+            setIsLoaded(true)
+        })
+    },[])
+    
     useEffect(() => {
         const currErrors = {}
-        if (submited) {
-            if (!address.length) {
+        if(isLoaded){
+            let check = false
+            spots.forEach((spot)=>{
+                if(spot.address === address)check = true
+            })
+           if (submited) {
+            if (!address.length ) {
                 currErrors.address = 'Address is required'
+            }
+            if(check){
+                currErrors.address = 'Address must be unique'
             }
             if (!city.length) {
                 currErrors.city = 'City is required'
@@ -49,7 +66,7 @@ function CreateSpotForm() {
             }
             if (!latitude.length || isNaN(Number(latitude)) || !(latitude >= -90 && latitude <= 90)) {
                 currErrors.latitude = 'latitude needs to be between -90 and 90'
-                console.log(currErrors.latitude)
+                // console.log(currErrors.latitude)
             }
             if (!previewImg.length) {
                 currErrors.img = 'Preview image is required'
@@ -77,18 +94,21 @@ function CreateSpotForm() {
                     currErrors.img3 = "Image URL must end in .png, .jpg, or .jpeg"
                 }
             }
-            if (description < 30) currErrors.description = "Description need 30 or more characters"
+            if (description.length < 30) currErrors.description = "Description need 30 or more characters"
             if (!spotName.length) currErrors.spotName = "Spot Name is required"
+            } 
         }
+        
         setErrors(currErrors)
         setImgErrors(currErrors)
     }, [submited, previewImg, img, img1, img2, img3, description, spotName, longitude, latitude, address, city, state, country, price])
 
     // console.log(latitude, '-------')
-    // console.log(errors, '-------')
+    // console.log(description.length, '-------')
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setSubmited(true)
         dispatch(createSpot({
             "address": address,
             "city": city,
@@ -99,16 +119,11 @@ function CreateSpotForm() {
             "name": spotName,
             "description": description,
             "price": Number(price)
-        })).catch(async (res) => {
-            const data = await res.json()
-            if (data && data.errors) {
-                setErrors(data.errors)
-                setSubmited(true)
-            }
-        }).then((spot) => {
+        })).then((spot) => {
             if (spot) {
+                console.log('helloooo')
                 const spotId = spot.id
-                console.log(spot.id, 'from create------')
+                setSubmited(true)
                 dispatch(addImage({
                     "spotId": spotId,
                     "url": previewImg,
@@ -144,7 +159,13 @@ function CreateSpotForm() {
                 }
                 history.push(`/spots/${spot.id}`)
             }
-
+        }).catch(async (res) => {
+            // console.log(res,'---data----')
+            const data = await res.json()
+            if (data && data.errors) {
+                setErrors(data.errors)
+                setSubmited(true)
+            }
         })
     }
 
@@ -178,7 +199,7 @@ function CreateSpotForm() {
                             onChange={(e) => setAddress(e.target.value)}
                         />
                     </label>
-                    {/* {errors.address && <p>{errors.address}</p>} */}
+                    {errors.message && <p className="errors">{errors.message}</p>}
                     {imgErrors.address && <p className="errors" >{imgErrors.address}</p>}
                     <div>
                         <label>
@@ -268,7 +289,7 @@ function CreateSpotForm() {
                             <input
                                 type="text"
                                 id="price-input"
-                                placeholder="Price per night '(USD)'"
+                                placeholder="Price per night (USD)"
                                 value={price}
                                 onChange={(e) => setPrice(e.target.value)}
                             />
@@ -326,7 +347,7 @@ function CreateSpotForm() {
                         />
                     </label>
                     <div className="dividers"></div>
-                    {errors.message && <p>{errors.message}</p>}
+                    {/* {errors.message && <p>{errors.message}</p>} */}
                     <button
                         id="create-button"
                         type="submit"

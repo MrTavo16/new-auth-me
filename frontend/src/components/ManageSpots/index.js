@@ -5,7 +5,7 @@ import SpotBox from '../SpotBox';
 import { useHistory } from "react-router-dom"
 import DeleteSpot from '../DeleteSpot';
 import OpenModalButton from '../OpenModalButton';
-
+import './ManageSpots.css'
 
 const ManageSpots = () => {
     const [isLoaded, setIsLoaded] = useState(false)
@@ -22,28 +22,34 @@ const ManageSpots = () => {
     const spots = useSelector(state => state.spots)
 
     return (
-        <section>
-            {isLoaded && <div>
+        <div id='outer'>
                 <h1>Manage Your Spots</h1>
-                <button onClick={()=>history.push('/spots/new')}>Create a New Spot</button>
+                <button id='create-b' onClick={()=>history.push('/spots/new')}>Create a New Spot</button>
+            {isLoaded && <div id='upper-div'>
                 {Object.values(spots).map((spot) => {
                     return (
-                        <div key={spot.id}>
+                        <div >
+                        <div className='man-spots' key={spot.id}>
                             <SpotBox spot={spot} />
-                            <div>
-                                <button onClick={()=>history.push(`/spots/${spot.id}/edit`)}>Update</button>
+                            <div id='del-up'>
+                                <button className='up-button' onClick={()=>history.push(`/spots/${spot.id}/edit`)}>Update</button>
                                 <>
                                     <OpenModalButton
+                                        style={{
+                                            "color":"white",
+                                            "background-color":"gray"
+                                        }}
                                         buttonText="Delete"
                                         modalComponent={<DeleteSpot spotId={spot.id} />}
-                                    />
+                                        />
                                 </>
-                            </div>
                         </div>
+                        </div>
+                         </div>
                     )
                 })}
             </div>}
-        </section>
+        </div>
     )
 }
 

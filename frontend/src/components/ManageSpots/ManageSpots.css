@@ -1,0 +1,57 @@
+#upperer-div{
+    display: flex;
+    
+}
+#create-b{
+    width: 180px;
+    margin-top: -20px;
+    margin-bottom: 40px;
+    color: white;
+    background-color: gray;
+}
+#outer{
+    display: flex;
+    flex-direction: column;
+}
+#upper-div{
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, 25%);
+    gap: 20px;
+}
+.man-spots{
+    padding: -10px;
+}
+#del-up{
+    display: flex;
+    gap: 5px;
+    margin-left: 62px;
+}
+.up-button{
+    color: white;
+    background-color: gray;
+}
+@media only screen and (max-width:1300px){
+    #upper-div{
+        display: grid;
+        width: 91%;
+        gap: 30px;
+        grid-template-columns: repeat(3, 33%) ;
+    }
+}
+@media only screen and (max-width:960px){
+    #upper-div{
+        display: grid;
+        width: 91%;
+        gap: 30px;
+        grid-template-columns: repeat(2, 50%) ;
+    }
+}
+@media only screen and (max-width:610px){
+    #upper-div{
+        display: grid;
+        width: 91%;
+        gap: 30px;
+        grid-template-columns: 100% ;
+    }
+}
