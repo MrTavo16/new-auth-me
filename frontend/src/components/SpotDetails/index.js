@@ -6,6 +6,7 @@ import { getReviewById } from '../../store/reviews';
 import PostReview from '../PostReviewForm';
 import OpenModalButton from '../OpenModalButton';
 import DeleteReview from '../DeleteReview';
+import './index.css'
 
 const SpotDetails = () => {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -21,7 +22,6 @@ const SpotDetails = () => {
     const monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
-    // console.log(reviews)
 
     useEffect(() => {
         if (isLoaded) {
@@ -41,64 +41,79 @@ const SpotDetails = () => {
                 setShowMenu(false)
             }
             
-            if(!(spot.avgStarRating === undefined)){
+            if(spot.avgStarRating){
                 setAvgStar(true)
-            }else{
-                setAvgStar(false)
             }
-            if(spot.SpotImages.length){
+            if(spot){
                 setImgLoaded(true)
             }
         }
-    }, [isLoaded, user, reviews, spot, avgStar, ])
+    }, [isLoaded, user, reviews, spot, avgStar,])
     
     const closeMenu = () => setShowMenu(false);
 
-    // console.log(showMenu)
+    // console.log(spot.avgStarRating)
     useEffect(() => {
         dispatch(getSpotById(spotId)).then(() => {
             dispatch(getReviewById(spotId))
         }).then(() => {
             setIsLoaded(true)
+
         })
-    }, [dispatch])
-    // console.log(spot.SpotImages)
+    }, [reviews.length])
+
+    // console.log()
+    // console.log()
+    // console.log()
     return (<section>
         {isLoaded && <>
             <h1>{spot.name}</h1>
-            <h3>{spot.city}, {spot.state}, {spot.country}</h3>
+            <h4>{spot.city}, {spot.state}, {spot.country}</h4>
 
-            {imgLoaded && <><div>
-                {spot.SpotImages[0].url && <img src={spot.SpotImages[0].url} />}
-            </div></>}
-            {spot.SpotImages.length&&<div>
-                {spot.SpotImages.slice(1).map((img) => {
-                    console.log(img)
-                    return <img key={img.url} src={img.url} />
-                })}
-            </div>}
-            <h3>Hosted by {spot.Owner.firstName} {spot.Owner.lastName}</h3>
-            <p>{spot.description}</p>
-            <div>
-                <div>
-                    <label>${spot.price} night </label>
-                    {reviews.length === 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} review</label> : <></>}
-                    {reviews.length > 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> : <></>}
-                    {!reviews.length ? <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>: <></>}
-                </div>
-                <button>Reserve</button>
+            <div className='preview-img'>
+            {spot.SpotImages[0].url ? <img src={spot.SpotImages[0].url} />:<></>}
             </div>
 
-            <div>----------------------------------</div>
+            <div className='other-imgs'>
+                {spot.SpotImages.slice(1).map((img) => {
+                    // console.log(img)
+                    return <img key={img.url} src={img.url} />
+                })}
+            </div>
 
-            {avgStar&&reviews.length === 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} review</label> : <></>}
-            {avgStar&&reviews.length > 1 ? <label>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> :<></>}
+            <div className='reserve-description'>
+                <div>
+                <h2>Hosted by {spot.Owner.firstName} {spot.Owner.lastName}</h2>
+                <p id='spot-desc'>{spot.description}</p>
+                </div>
+                <div className='reserve-section'>
+                    <div className='price'>
+                    <label>${spot.price} night </label>
+                    </div>
+                    <div className='reveiw-on-reserve-button'>
+                    {reviews.length === 1 ? <label><i className="fa fa-star" aria-hidden="true"></i>{reviews[0].stars.toFixed(1)} · {reviews.length} review</label> : <></>}
+                    {reviews.length > 1 ? <label><i className="fa fa-star" aria-hidden="true"></i>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> : <></>}
+                    {!reviews.length ? <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>: <></>}
+                    </div>
+                    <button id='reserve-button' onClick={()=>alert('Feature coming soon!')}>Reserve</button>
+                </div>
+            </div>
+
+            <div className='divider'></div>
+            <div className='reviews-botton'>
+            {reviews.length === 1 ? <label><i className="fa fa-star" aria-hidden="true"></i>{reviews[0].stars.toFixed(1)} · {reviews.length} review</label>: <></>}
+            {reviews.length > 1 ? <label><i className="fa fa-star" aria-hidden="true"></i>{spot.avgStarRating.toFixed(1)} · {reviews.length} reviews</label> :<></>}
             {!reviews.length ?  <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>:<></>}
+            </div>
             <div>
 
                 {showMenu && <>
                     <>
                         <OpenModalButton
+                            style={{
+                                "color":'white',
+                                "background-color":"gray"
+                            }}
                             buttonText="Post a review"
                             onItemClick={closeMenu}
                             modalComponent={<PostReview spotId={spotId} />}
@@ -106,17 +121,21 @@ const SpotDetails = () => {
                     </>
                 </>}
 
-                {!reviews.length && <p>Be first to post a review!</p>}
+                {!reviews.length && showMenu ? <p>Be first to post a review!</p>:<></>}
                 {reviews && reviews.map((review) => {
                     if (user) {
                         if(!(review.User.id === undefined)){
                            if (user.id === review.User.id) {
                             return <div key={review.id}>
-                                <h4>{review.User.firstName}</h4>
+                                <h4 className='firstName-onReview'>{review.User.firstName}</h4>
                                 <p>{monthNames[Number(review.createdAt.toString().split('-')[1]) - 1]}-{review.createdAt.toString().split('-')[0]}</p>
                                 <p>{review.review}</p>
                                 <>
                                     <OpenModalButton
+                                        style={{
+                                            "color":'white',
+                                            "background-color":"gray"
+                                        }}
                                         buttonText="Delete"
                                         onItemClick={closeMenu}
                                         modalComponent={<DeleteReview spotId={spot.id} reviewId={review.id} />}
@@ -129,8 +148,8 @@ const SpotDetails = () => {
                     }
 
                     return <div key={review.id}>
-                        <h4>{review.User.firstName}</h4>
-                        <p>{monthNames[Number(review.createdAt.toString().split('-')[1]) - 1]}-{review.createdAt.toString().split('-')[0]}</p>
+                        <h4 className='firstName-onReview'>{review.User.firstName}</h4>
+                        <p className='date-onReview'>{monthNames[Number(review.createdAt.toString().split('-')[1]) - 1]}-{review.createdAt.toString().split('-')[0]}</p>
                         <p>{review.review}</p>
                     </div>
                 })}

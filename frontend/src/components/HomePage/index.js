@@ -15,13 +15,17 @@ const HomePage = () => {
     const spots = useSelector(state => state.spots)
     
     return (
-        <section>
-            {isLoaded&&<div>
+        <>
+            {isLoaded&&<>
+            <div >
+            <div id ='home'>
                 {Object.values(spots).map((spot) => {
                     return<SpotBox key={spot.id} spot={spot}/>  
                 })}
-            </div>}
-        </section>
+            </div>
+            </div>
+            </>}
+        </>
     )
 }
 

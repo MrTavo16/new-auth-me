@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch } from 'react-redux';
 import * as sessionActions from '../../store/session';
-import OpenModalMenuItem from './OpenModalMenuItem';
 import LoginFormModal from '../LoginFormModal';
 import SignupFormModal from '../SignupFormModal';
 import { useHistory } from "react-router-dom"
+import OpenModalButton from "../OpenModalButton";
+import './Navigation.css'
 
 function ProfileButton({ user }) {
   const dispatch = useDispatch();
@@ -35,7 +36,10 @@ function ProfileButton({ user }) {
 
   const logout = (e) => {
     e.preventDefault();
-    dispatch(sessionActions.logout());
+    dispatch(sessionActions.logout())
+      .then(()=>{
+        history.push('/')
+      });
     closeMenu();
   };
 
@@ -44,38 +48,44 @@ function ProfileButton({ user }) {
   return (
     <>
       <button onClick={openMenu}>
-        <i className="fas fa-user-circle" />
+        <i className="fas fa-user-circle fa-2x" />
       </button>
-      <ul className={ulClassName} ref={ulRef}>
+      <div className={ulClassName} ref={ulRef}>
         {showMenu && <>
         {user ? (
-          <>
-            <li>{user.username}</li>
-            <li>{user.firstName} {user.lastName}</li>
-            <li>{user.email}</li>
-            <li>
-              <button onClick={()=>history.push('/spots/current')}>Manage Spots</button>
-            </li>
-            <li>
-              <button onClick={logout}>Log Out</button>
-            </li>
-          </>
+          <div>
+            <div>Hello, {user.firstName}</div>
+            <div>{user.email}</div>
+            <div className="divider"></div>
+            <div>
+              <button style={{
+                "marginTop":"2px",
+               }} onClick={()=>history.push('/spots/current')}>Manage Spots</button>
+            <div style={{"marginTop":"2px"}} className="divider"></div>
+            </div>
+            <div>
+              <button style={{
+                "backgroundColor":"gray",
+                "color":"white"
+              }} onClick={logout}>Log Out</button>
+            </div>
+          </div>
         ) : (
           <>
-            <OpenModalMenuItem
-              itemText="Log In"
-              onItemClick={closeMenu}
+            <OpenModalButton
+              buttonText="Log In"
+              onButtonClick={closeMenu}
               modalComponent={<LoginFormModal />}
             />
-            <OpenModalMenuItem
-              itemText="Sign Up"
-              onItemClick={closeMenu}
+            <OpenModalButton
+              buttonText="Sign Up"
+              onButtonClick={closeMenu}
               modalComponent={<SignupFormModal />}
             />
           </>
         )}
         </>}
-      </ul>
+      </div>
     </>
   );
 }

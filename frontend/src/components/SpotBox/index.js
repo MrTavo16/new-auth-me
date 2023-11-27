@@ -2,7 +2,7 @@ import { Link, NavLink, useHistory } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getReviewById } from '../../store/reviews';
-
+import './SpotBox.css'
 
 const SpotBox = ({ spot }) => {
     // console.log(spot)
@@ -29,16 +29,20 @@ const SpotBox = ({ spot }) => {
     }, [spot, isLoaded])
 
     return (<>
-        {isLoaded && <>
+        {isLoaded && <><div className='spot-container'>
             <div onClick={handleSpotClick}>
-                {loadedPreviewImg && <img src={spot.previewImage} />}
+                {loadedPreviewImg && <div className='img-container'><img src={spot.previewImage} /></div>}
+                <div className='location-review'>
                 <label>{spot.city}, {spot.state}</label>
-                <div>
-                    <img />
-                    {spot.avgStarRating? <p>{spot.avgStarRating.toFixed(1)}</p> : 'New!'}
+                {spot.avgStarRating? <label><i className="fa fa-star" aria-hidden="true"></i>{spot.avgStarRating.toFixed(1)}</label> : <label><i className="fa fa-star" aria-hidden="true"></i>New!</label>}
                 </div>
-                <label>{spot.price} night</label>
+                
+                <label>${spot.price} night</label>
+           </div>
+
             </div>
+
+        
         </>}
     </>
     )

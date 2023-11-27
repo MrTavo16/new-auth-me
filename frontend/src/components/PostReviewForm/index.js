@@ -3,13 +3,14 @@ import { useParams, useHistory } from 'react-router-dom'
 import { createReview } from '../../store/reviews'
 import { useDispatch, useSelector } from 'react-redux';
 import { useModal } from "../../context/Modal";
+import './PostReviewForm.css'
 
 
 
 const PostReview = ({ spotId}) => {
     const dispatch = useDispatch()
     const { closeModal } = useModal();  
-    const [reviewText, setReviewText] = useState('Leave your review here...')
+    const [reviewText, setReviewText] = useState('')
     const [stars, setStars] = useState(0)
     const [errors, setErrors] = useState({})
     const [selected, setSelected] = useState('black')
@@ -22,39 +23,39 @@ const PostReview = ({ spotId}) => {
         // console.log(spotId)
         const currErrors = {}
         if(stars === 1){
-            setSelected('red')
-            setSelected1('black')
-            setSelected2('black')
-            setSelected3('black')
-            setSelected4('black')
+            setSelected('#ff0000')
+            setSelected1('#000000')
+            setSelected2('#000000')
+            setSelected3('#000000')
+            setSelected4('#000000')
         }
         if(stars === 2){
-            setSelected('black')
-            setSelected1('red')
-            setSelected2('black')
-            setSelected3('black')
-            setSelected4('black')
+            setSelected('#ff0000')
+            setSelected1('#ff0000')
+            setSelected2('#000000')
+            setSelected3('#000000')
+            setSelected4('#000000')
         }
         if(stars === 3){
-            setSelected('black')
-            setSelected1('black')
-            setSelected2('red')
-            setSelected3('black')
-            setSelected4('black')
+            setSelected('#ff0000')
+            setSelected1('#ff0000')
+            setSelected2('#ff0000')
+            setSelected3('#000000')
+            setSelected4('#000000')
         }
         if(stars === 4){
-            setSelected('black')
-            setSelected1('black')
-            setSelected2('black')
-            setSelected3('red')
-            setSelected4('black')
+            setSelected('#ff0000')
+            setSelected1('#ff0000')
+            setSelected2('#ff0000')
+            setSelected3('#ff0000')
+            setSelected4('#000000')
         }
         if(stars === 5){
-            setSelected('black')
-            setSelected1('black')
-            setSelected2('black')
-            setSelected3('black')
-            setSelected4('red')
+            setSelected('#ff0000')
+            setSelected1('#ff0000')
+            setSelected2('#ff0000')
+            setSelected3('#ff0000')
+            setSelected4('#ff0000')
         }
         if(reviewText.length < 10){
             currErrors.reviewText = 'less than 10'
@@ -78,22 +79,33 @@ const PostReview = ({ spotId}) => {
             }
         }).then(closeModal)
     }
-
+    // console.log(stars)
     return (
-        <div>
-            <form onSubmit={handleSubmit}>
+        <div id='post-review-form-div'>
+            <form id='post-review-form-div' onSubmit={handleSubmit}>
                 <h1>How was your stay?</h1>
-                {/* {errors} */}
-                <textarea value={reviewText} onChange={(e)=>setReviewText(e.target.value)}></textarea>
-                <div>
-                    <div style={{color:selected}} onClick={()=> setStars(1)}>1</div>
-                    <div style={{color:selected1}} onClick={()=> setStars(2)}>2</div>
-                    <div style={{color:selected2}} onClick={()=> setStars(3)}>3</div>
-                    <div style={{color:selected3}} onClick={()=> setStars(4)}>4</div>
-                    <div style={{color:selected4}} onClick={()=> setStars(5)}>5</div>
-                    stars
+                {errors && <p>{errors.message}</p>}
+                <textarea id='review-text' value={reviewText} placeholder='Leave your review here...' onChange={(e)=>setReviewText(e.target.value)}></textarea>
+                <div className='star-container'>
+                Stars
+                    <div id='star-five' onClick={()=> setStars(5)}>
+                        <span style={{color:selected4}} className="fa-solid fa-star"></span>
+                    </div>
+                    <div id='star-four'  onClick={()=> setStars(4)}>
+                        <span style={{color:selected3}} className="fa-solid fa-star"></span>
+                    </div>
+                    <div id='star-three'  onClick={()=> setStars(3)}>
+                        <span style={{color:selected2}} className="fa-solid fa-star"></span>
+                    </div>
+                    <div id='star-two'  onClick={()=> setStars(2)}>
+                        <span style={{color:selected1}} className="fa-solid fa-star"></span>
+                    </div>
+                    <div id='star-one' onClick={()=> setStars(1)}>
+                        <span className="fa-solid fa-star" style={{color:selected}}></span>
+                    </div>
                 </div>
                 <button
+                id='sub-but'
                 type="submit"
                 disabled={Object.values(errors).length}
                 >

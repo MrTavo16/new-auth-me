@@ -12,11 +12,13 @@ const DeleteSpot=({spotId})=>{
             .then(closeModal)
     }
 
-    return(<div>
-        <h1>Confirm Delete</h1>
-        <p>are you sure you want to remove this spot from the listings?</p>
-        <div onClick={handleYes}>Yes {'(Delete Spot)'}</div>
-        <div onClick={closeModal}>No {'(Keep Spot)'}</div>
+    return(<div className="all-delete">
+        <h1 className="title">Confirm Delete</h1>
+        <div className="delete-body">
+        <p>Are you sure you want to remove this spot from the listings?</p>
+        <div className="yes-button" onClick={handleYes}>Yes {'(Delete Spot)'}</div>
+        <div className="no-button" onClick={closeModal}>No {'(Keep Spot)'}</div>
+        </div>
     </div>)
 }
 export default DeleteSpot

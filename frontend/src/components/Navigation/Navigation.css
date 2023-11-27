@@ -1,0 +1,33 @@
+.navbar{
+    display: flex;
+    justify-content: space-between;
+}
+.create-spot{
+    position:relative;
+    left: -7px;
+    border-color: aqua;
+    
+}
+.user-menu{
+    position: relative;
+}
+.create-user{
+    display: flex;
+    justify-content: space-between;
+}
+.create-button{
+    color:darkturquoise;
+    border: none;
+    background-color: white;
+    font-size: larger;
+}
+.profile-dropdown{
+    display: flex;
+    flex-direction: column;
+}
+.divider{
+    background-color: gray;
+    display: flex;
+    height: 0px;
+    width: 100%;
+}

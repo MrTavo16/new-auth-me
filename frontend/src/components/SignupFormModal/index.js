@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useModal } from "../../context/Modal";
 import * as sessionActions from "../../store/session";
@@ -6,6 +6,8 @@ import "./SignupForm.css";
 
 function SignupFormModal() {
   const dispatch = useDispatch();
+  const [empty, setEmpty] = useState(false)
+  const [submited, setSubmited] = useState(false)
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -15,10 +17,38 @@ function SignupFormModal() {
   const [errors, setErrors] = useState({});
   const { closeModal } = useModal();
 
+  useEffect(() => {
+    const currErrors = {}
+    if (!email.length && !username.length && !firstName.length && !lastName.length && !password.length && !confirmPassword.length) setEmpty(true)
+    else setEmpty(false)
+    if (submited) {
+      if (!email.length) {
+        currErrors.email = 'Email is required'
+      }
+      // console.log(submited)
+      if (!username.length || username.length < 4) {
+        currErrors.username = 'Username is required and must be more than 4 characters'
+      }
+      if (!firstName.length) {
+        currErrors.firstName = 'First name is required'
+      }
+      if (!lastName.length) {
+        currErrors.lastName = 'Last name is required'
+      }
+      if (!password.length || password.length < 6) {
+        currErrors.password = 'Password is required and must be more than 6 characters'
+      }
+      if (!confirmPassword.length) {
+        currErrors.confirmPassword = 'Confirm password is required'
+      }
+    }
+    setErrors(currErrors)
+  }, [email, username, firstName, lastName, password, confirmPassword])
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (password === confirmPassword) {
-      setErrors({});
+      setSubmited(true)
       return dispatch(
         sessionActions.signup({
           email,
@@ -28,6 +58,8 @@ function SignupFormModal() {
           password,
         })
       )
+        .then(() => {
+        })
         .then(closeModal)
         .catch(async (res) => {
           const data = await res.json();
@@ -42,74 +74,74 @@ function SignupFormModal() {
   };
 
   return (
-    <>
+    <div className="signup-all">
       <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+      <form className="signup-all" onSubmit={handleSubmit}>
+        <div className="text-box">
+        <input
+          type="text"
+          value={email}
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
           />
-        </label>
+        </div>
         {errors.email && <p>{errors.email}</p>}
-        <label>
-          Username
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
+
+        <div className="text-box">
+        <input
+          type="text"
+          value={username}
+          placeholder="Username"
+          onChange={(e) => setUsername(e.target.value)}
           />
-        </label>
+        </div>
+
         {errors.username && <p>{errors.username}</p>}
-        <label>
-          First Name
-          <input
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
+        <div className="text-box">
+        <input
+          type="text"
+          value={firstName}
+          placeholder='First Name'
+          onChange={(e) => setFirstName(e.target.value)}
           />
-        </label>
+        </div>
+
         {errors.firstName && <p>{errors.firstName}</p>}
-        <label>
-          Last Name
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
+        <div className="text-box">
+        <input
+          type="text"
+          value={lastName}
+          placeholder='Last Name'
+          onChange={(e) => setLastName(e.target.value)}
           />
-        </label>
+        </div>
+
         {errors.lastName && <p>{errors.lastName}</p>}
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+        <div className="text-box">
+        <input
+          type="password"
+          value={password}
+          placeholder='Password'
+          onChange={(e) => setPassword(e.target.value)}
           />
-        </label>
+          </div>
+
         {errors.password && <p>{errors.password}</p>}
-        <label>
-          Confirm Password
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
+        <div className="text-box">
+        <input
+          type="password"
+          value={confirmPassword}
+          placeholder='Confirm Password'
+          onChange={(e) => setConfirmPassword(e.target.value)}
           />
-        </label>
-        {errors.confirmPassword && (
-          <p>{errors.confirmPassword}</p>
-        )}
-        <button type="submit">Sign Up</button>
+          </div>
+
+        {errors.confirmPassword && <p>{errors.confirmPassword}</p>}
+        <div className="submit-button">
+        <button className="button"disabled={Object.values(errors).length || empty} type="submit">Sign Up</button>
+        </div>
       </form>
-    </>
+    </div>
   );
 }
 

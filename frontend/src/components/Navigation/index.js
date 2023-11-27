@@ -10,21 +10,28 @@ function Navigation({ isLoaded }){
   const sessionUser = useSelector(state => state.session.user);
   const history = useHistory()
 
-  return (
-    <ul>
-      <li>
-        <NavLink exact to="/">Home</NavLink>
-      </li>
-      {isLoaded && <>
-        {sessionUser &&<li>
-          <button onClick={()=>history.push('/spots/new')}>Create a New Spot</button>
-        </li>}
-        <li>
+  return (<>
+    <div className='navbar'>
+      <div style={{color: '#ff1100', height:''}} onClick={()=> history.push('/')}>
+        <div className="fa-brands fa-airbnb fa-3x" style={{color: '#ff1100'}}>
+        </div>
+        <i style={{fontSize:'40px'}}>
+        airbnb
+        </i>
+      </div>
+      
+      {isLoaded && <div className='create-user'>
+        {sessionUser &&<div className='create-spot'>
+          <button className="create-button" onClick={()=>history.push('/spots/new')}>Create a New Spot</button>
+        </div>}
+        <i className='user-menu'>
           <ProfileButton user={sessionUser} />
-        </li>
-      </>}
-    </ul>
-  );
+        </i>
+      </div>}
+    </div>
+    <span className='divider'>
+    </span>
+  </>);
 }
 
 export default Navigation;
