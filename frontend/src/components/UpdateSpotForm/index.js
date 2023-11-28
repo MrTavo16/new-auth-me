@@ -44,16 +44,10 @@ function UpdateSpotForm(){
             let check = false
             // console.log(spots, '-----bb')
             // console.log(currSpot, '-----bb')
-            spots.forEach((spot)=>{
-                if(spot.address === address)check = true
-            })
-            console.log(check)
+            // console.log(check)
            if (submited) {
             if (!address.length) {
                 currErrors.address = 'Address is required'
-            }
-            if(check){
-                currErrors.address = 'Address must be unique'
             }
             if (!city.length) {
                 currErrors.city = 'City is required'
@@ -116,9 +110,10 @@ function UpdateSpotForm(){
             "price": Number(price)
         })).catch(async (res)=>{
             const data = await res.json()
-            console.log(data,'--------------')
+            // console.log(data,'--------------')
             if(data && data.errors){
                 setErrors(data.errors)
+                setImgErrors(data.errors)
                 setSubmited(true)
             }
         }).then((spot)=>{
@@ -127,7 +122,7 @@ function UpdateSpotForm(){
             }
         })
     }
-
+    // console.log(errors)
     return(
         <div id='saver'>
         {isLoaded&&
@@ -159,7 +154,7 @@ function UpdateSpotForm(){
                             onChange={(e) => setAddress(e.target.value)}
                         />
                     </label>
-                    {/* {errors.address && <p>{errors.address}</p>} */}
+                    {errors.errors && <p className="errors">{errors.errors}</p>}
                     {imgErrors.address && <p className="errors" >{imgErrors.address}</p>}
                     <div>
                         <label>

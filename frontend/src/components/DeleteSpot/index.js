@@ -3,7 +3,7 @@ import { deleteSpot } from "../../store/spots";
 import { useDispatch } from "react-redux";
 
 const DeleteSpot=({spotId})=>{
-    console.log(spotId)
+    // console.log(spotId)
     const { closeModal } = useModal();
     const dispatch = useDispatch()
 

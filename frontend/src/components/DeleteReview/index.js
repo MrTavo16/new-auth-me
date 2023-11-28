@@ -6,7 +6,7 @@ import '../DeleteSpot/delete.css'
 
 
 const DeleteReview=({spotId, reviewId})=>{
-    console.log(reviewId)
+    // console.log(reviewId)
     const history = useHistory()
     const { closeModal } = useModal();
     const dispatch = useDispatch()
