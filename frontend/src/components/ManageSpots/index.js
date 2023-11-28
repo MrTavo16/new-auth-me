@@ -28,8 +28,8 @@ const ManageSpots = () => {
             {isLoaded && <div id='upper-div'>
                 {Object.values(spots).map((spot) => {
                     return (
-                        <div >
-                        <div className='man-spots' key={spot.id}>
+                        <div key={spot.id}>
+                        <div className='man-spots'>
                             <SpotBox spot={spot} />
                             <div id='del-up'>
                                 <button className='up-button' onClick={()=>history.push(`/spots/${spot.id}/edit`)}>Update</button>
@@ -37,7 +37,7 @@ const ManageSpots = () => {
                                     <OpenModalButton
                                         style={{
                                             "color":"white",
-                                            "background-color":"gray"
+                                            "backgroundColor":"gray"
                                         }}
                                         buttonText="Delete"
                                         modalComponent={<DeleteSpot spotId={spot.id} />}

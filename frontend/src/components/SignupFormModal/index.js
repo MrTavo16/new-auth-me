@@ -6,7 +6,7 @@ import "./SignupForm.css";
 
 function SignupFormModal() {
   const dispatch = useDispatch();
-  const [empty, setEmpty] = useState(false)
+  const [empty, setEmpty] = useState(true)
   const [submited, setSubmited] = useState(false)
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -19,7 +19,11 @@ function SignupFormModal() {
 
   useEffect(() => {
     const currErrors = {}
-    if (!email.length && !username.length && !firstName.length && !lastName.length && !password.length && !confirmPassword.length) setEmpty(true)
+    // console.log(submited)
+    // console.log(!email.length || !username.length || !firstName.length || !lastName.length || !password.length || !confirmPassword.length)
+    if (!email.length || !username.length || !firstName.length || !lastName.length || !password.length || !confirmPassword.length) setEmpty(false)
+    else setEmpty(true)
+    if(username.length < 4 || password.length < 6|| !confirmPassword.length) setEmpty(true)
     else setEmpty(false)
     if (submited) {
       if (!email.length) {
@@ -85,7 +89,7 @@ function SignupFormModal() {
           onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        {errors.email && <p>{errors.email}</p>}
+        {errors.email && <p className='errors'>{errors.email}</p>}
 
         <div className="text-box">
         <input
@@ -96,7 +100,7 @@ function SignupFormModal() {
           />
         </div>
 
-        {errors.username && <p>{errors.username}</p>}
+        {errors.username && <p className='errors'>{errors.username}</p>}
         <div className="text-box">
         <input
           type="text"
@@ -105,8 +109,7 @@ function SignupFormModal() {
           onChange={(e) => setFirstName(e.target.value)}
           />
         </div>
-
-        {errors.firstName && <p>{errors.firstName}</p>}
+        {errors.firstName && <p className='errors'>{errors.firstName}</p>}
         <div className="text-box">
         <input
           type="text"
@@ -116,7 +119,7 @@ function SignupFormModal() {
           />
         </div>
 
-        {errors.lastName && <p>{errors.lastName}</p>}
+        {errors.lastName && <p className='errors'>{errors.lastName}</p>}
         <div className="text-box">
         <input
           type="password"
@@ -126,7 +129,7 @@ function SignupFormModal() {
           />
           </div>
 
-        {errors.password && <p>{errors.password}</p>}
+        {errors.password && <p className='errors'>{errors.password}</p>}
         <div className="text-box">
         <input
           type="password"
@@ -136,9 +139,9 @@ function SignupFormModal() {
           />
           </div>
 
-        {errors.confirmPassword && <p>{errors.confirmPassword}</p>}
+        {errors.confirmPassword && <p className='errors'>{errors.confirmPassword}</p>}
         <div className="submit-button">
-        <button className="button"disabled={Object.values(errors).length || empty} type="submit">Sign Up</button>
+        <button className="button" disabled={empty || Object.values(errors).length} type="submit">Sign Up</button>
         </div>
       </form>
     </div>

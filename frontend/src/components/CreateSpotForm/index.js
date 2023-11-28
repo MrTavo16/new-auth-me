@@ -94,7 +94,8 @@ function CreateSpotForm() {
                     currErrors.img3 = "Image URL must end in .png, .jpg, or .jpeg"
                 }
             }
-            if (description.length < 30) currErrors.description = "Description need 30 or more characters"
+            if (description.length < 30) currErrors.description = "Description needs 30 or more characters "
+            if(description.length > 240)currErrors.description = "Description needs to be less than 240 characters"
             if (!spotName.length) currErrors.spotName = "Spot Name is required"
             } 
         }
@@ -109,64 +110,71 @@ function CreateSpotForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setSubmited(true)
-        dispatch(createSpot({
-            "address": address,
-            "city": city,
-            "state": state,
-            "country": country,
-            "lat": Number(latitude),
-            "lng": Number(longitude),
-            "name": spotName,
-            "description": description,
-            "price": Number(price)
-        })).then((spot) => {
-            if (spot) {
-                console.log('helloooo')
-                const spotId = spot.id
-                setSubmited(true)
-                dispatch(addImage({
-                    "spotId": spotId,
-                    "url": previewImg,
-                    "preview": true
-                }))
-                if (img) {
+        if(!previewImg.length){
+            setErrors({previewImg: "Preview image required"})
+            return false
+        }else{
+            dispatch(createSpot({
+                "address": address,
+                "city": city,
+                "state": state,
+                "country": country,
+                "lat": Number(latitude),
+                "lng": Number(longitude),
+                "name": spotName,
+                "description": description,
+                "price": Number(price)
+            })).then((spot) => {
+                if (spot) {
+                    if(!previewImg.length){
+                        throw new Error('preview image required')
+                    }
+                    const spotId = spot.id
+                    setSubmited(true)
                     dispatch(addImage({
                         "spotId": spotId,
-                        "url": img,
-                        "preview": false
+                        "url": previewImg,
+                        "preview": true
                     }))
+                    if (img) {
+                        dispatch(addImage({
+                            "spotId": spotId,
+                            "url": img,
+                            "preview": false
+                        }))
+                    }
+                    if (img1) {
+                        dispatch(addImage({
+                            "spotId": spotId,
+                            "url": img1,
+                            "preview": false
+                        }))
+                    }
+                    if (img2) {
+                        dispatch(addImage({
+                            "spotId": spotId,
+                            "url": img2,
+                            "preview": false
+                        }))
+                    }
+                    if (img3) {
+                        dispatch(addImage({
+                            "spotId": spotId,
+                            "url": img3,
+                            "preview": false
+                        }))
+                    }
+                    history.push(`/spots/${spot.id}`)
                 }
-                if (img1) {
-                    dispatch(addImage({
-                        "spotId": spotId,
-                        "url": img1,
-                        "preview": false
-                    }))
+            }).catch(async (res) => {
+                // console.log(res,'---data----')
+                const data = await res.json()
+                if (data && data.errors) {
+                    setErrors(data.errors)
+                    setSubmited(true)
                 }
-                if (img2) {
-                    dispatch(addImage({
-                        "spotId": spotId,
-                        "url": img2,
-                        "preview": false
-                    }))
-                }
-                if (img3) {
-                    dispatch(addImage({
-                        "spotId": spotId,
-                        "url": img3,
-                        "preview": false
-                    }))
-                }
-                history.push(`/spots/${spot.id}`)
-            }
-        }).catch(async (res) => {
-            // console.log(res,'---data----')
-            const data = await res.json()
-            if (data && data.errors) {
-                setErrors(data.errors)
-                setSubmited(true)
-            }
-        })
+            })
+        }
     }
 
     return (
@@ -239,7 +247,7 @@ function CreateSpotForm() {
                             />
                         </label>
                         {errors.lat && <p className="errors" >{errors.lat}</p>}
-                        {imgErrors.latitude && <p>{imgErrors.latitude}</p>}
+                        {imgErrors.latitude && <p className="errors">{imgErrors.latitude}</p>}
                         ,
                         <label>
                             Longitude

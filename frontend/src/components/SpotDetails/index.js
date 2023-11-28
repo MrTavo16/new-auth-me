@@ -12,6 +12,7 @@ const SpotDetails = () => {
     let imgs
     const [isLoaded, setIsLoaded] = useState(false);
     const [imgLoaded, setImgLoaded] = useState(false)
+    const [imgLoaded2, setImgLoaded2] = useState(false)
     const [showMenu, setShowMenu] = useState(false);
     const [avgStar, setAvgStar] = useState(false)
     const dispatch = useDispatch()
@@ -89,7 +90,7 @@ const SpotDetails = () => {
             </div>
 
             <div className='reserve-description'>
-                <div>
+                <div id='desc'>
                 <h2>Hosted by {spot.Owner.firstName} {spot.Owner.lastName}</h2>
                 <p id='spot-desc'>{spot.description}</p>
                 </div>

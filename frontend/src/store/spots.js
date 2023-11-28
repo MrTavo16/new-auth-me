@@ -32,7 +32,6 @@ export const recieveImage = (img)=>({
 })
 //---------------------------
 export const addImage = (img)=>async (dispatch)=>{
-    console.log(img.spotId,'store -----')
     const res = await csrfFetch(`/api/spots/${img.spotId}/images`,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -49,7 +48,6 @@ export const getAllSpots = ()=>async (dispatch)=>{
     const res = await fetch('/api/spots')
     if(res.ok){
         const data = await res.json()
-        // console.log(data)
         dispatch(loadSpots(data))
         return data
     }
@@ -125,7 +123,6 @@ const spotReducer = (state = {}, action)=>{
     switch(action.type){
         case LOAD_SPOTS:
             newState = {}
-            // console.log(action.spots,'--------------')
             if(action.spots.Spots&& action.spots.Spots !== undefined){
                action.spots.Spots.forEach((spot)=>{
                 newState[spot.id] = spot
@@ -137,7 +134,6 @@ const spotReducer = (state = {}, action)=>{
         case RECIEVE_SPOT:
             return {...state, [action.spot.id]:action.spot}
         case UPDATE_SPOT:
-            console.log(action.spot)
             return {...state, [action.spot.id]:action.spot}
         case REMOVE_SPOT:
             newState = {...state}

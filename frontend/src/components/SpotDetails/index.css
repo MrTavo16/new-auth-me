@@ -24,6 +24,9 @@
     height: 100%;
     object-fit: cover;
 }
+#desc{
+    width: 600px;
+}
 .reserve-description{
     display: flex;
     justify-content: space-between;
@@ -73,4 +76,9 @@
 }
 .firstName-onReview{
     margin-bottom: -10px;
+}
+@media only screen and (max-width:960px){
+    #reserve-button{
+        width: 150px;
+    }
 }
